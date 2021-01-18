@@ -60,9 +60,7 @@ const STRINGS = [
             "mereka jaga. Kastil ini memiliki 30 HP dan tidak dapat menyerang.\n" +
             "6. Di setiap ronde, masing-masing pemain memiliki credit dengan \n" +
             "nilai maksimum 10 credits. Setiap ronde, masing-masing pemain \n" +
-            "mendapatkan credit sejumlah nomor ronde tersebut. Mulai ronde ke-9 \n" +
-            "hingga seterusnya, credit yang diterima masing-masing pemain \n" +
-            "disamakan, yakni sebesar +9\n" +
+            "mendapatkan credit sejumlah nomor ronde tersebut.\n" +
             "7. Pada gilirannya, masing-masing pemain dapat:\n" +
             "   - Menggunakan credit untuk membeli pasukan. Jika anda membeli \n" +
             "   pasukan, pasukan yang baru anda beli baru bisa diberi perintah \n" +
@@ -97,8 +95,13 @@ const STRINGS = [
 
 function Player(p_name) {
     this.p_name = p_name;
-    this.formation = [new Castle(this.p_name)];
+    this.formation = [new Castle(this)];
     this.credit = 0;
+
+    this.credits_earned = 0;
+    this.credits_spent = 0;
+    this.units_bought = 0;
+    this.damage_dealt = 0;
 
     //------------------------------------------------------------------------------------------------------------------
     // > Method: Get Castle HP
@@ -178,6 +181,9 @@ function Player(p_name) {
 
         this.credit -= new_unit.cost;
         console.log(`${this.p_name} membeli unit ${new_unit.name}!`);
+
+        this.credits_spent += new_unit.cost;
+        this.units_bought++;
     };
 
     //------------------------------------------------------------------------------------------------------------------
@@ -241,7 +247,7 @@ function Player(p_name) {
         const movable_units = [];
 
         for(let i=1; i<this.formation.length; i++) {
-            if(!this.formation[i].has_moved)
+            if(!this.formation[i].has_moved && this.formation[i].hp > 0)
                 movable_units.push(i);
         }
         return movable_units;
@@ -277,6 +283,10 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
         let dmg = random(this.dmg_min, this.dmg_max);
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
+
+        this.owner.damage_dealt += dmg;
+
+        this.vexanian_check(target, dmg);    // Jika target adalah Vexanian Illusionist, penyerang mendapat damage
     };
 
     //------------------------------------------------------------------------------------------------------------------
@@ -285,7 +295,7 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
     // Mengaplikasikan damage reflection jika unit ini menyerang Vexanian Illusionist
     //------------------------------------------------------------------------------------------------------------------
 
-    this.vexanian_check = function(target) {
+    this.vexanian_check = function(target, dmg) {
         if(target.hasOwnProperty('dmg_return_mod')) {
             dmg = Math.floor(dmg * target.dmg_return_mod);
             this.hp -= dmg;
@@ -308,17 +318,14 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
         //--------------------------------------------------------------------------------------------------------------
 
         if(!this.has_moved) {
-            this.deal_damage(target);       // Kalkulasi damage + aksi penyerangan
-            this.vexanian_check(target);    // Jika target adalah Vexanian Illusionist, penyerang mendapat damage
+            this.deal_damage(target);           // Kalkulasi damage + aksi penyerangan
+
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit berhasil menurunkan HP terget ke 0
             //----------------------------------------------------------------------------------------------------------
-            if(target.hp <= 0) {
-                if(target.is_castle)
-                    console.log(`\nKastil ${target.p_name} telah hancur! Game over!`);
-                else
-                    console.log(get_kill_quote(this, target));
+            if(target.hp <= 0 && !target.is_castle) {
+                console.log(get_kill_quote(this, target));
             }
 
             //----------------------------------------------------------------------------------------------------------
@@ -421,7 +428,7 @@ function NoviceAdventurer(owner) {
     Unit.call(this,
         owner,
         "Novice Adventurer",            // Nama unit
-        1, 6,                           // Damage minimal, maksimal
+        1, 4,                           // Damage minimal, maksimal
         6,                              // Max HP
         1,                              // Harga
 
@@ -546,6 +553,8 @@ function Bomber(owner) {
         );
         target.hp -= dmg;
 
+        this.owner.damage_dealt += dmg;
+
         //--------------------------------------------------------------------------------------------------------------
         // Bunuh unit ini
         //--------------------------------------------------------------------------------------------------------------
@@ -597,6 +606,8 @@ function Nightblade(owner) {
         let dmg = random(this.dmg_min, this.dmg_max) + random(this.dmg_min, this.dmg_max);
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
+
+        this.owner.damage_dealt += dmg;
 
         //----------------------------------------------------------------------------------------------------------
         // Nyatakan bahwa unit tak lagi tersembunyi dan dapat diserang oleh lawan
@@ -656,6 +667,8 @@ function Berserker(owner) {
 
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} dengan ${dmg} poin damage!`);
+
+        this.owner.damage_dealt += dmg;
     };
 
     //------------------------------------------------------------------------------------------------------------------
@@ -733,22 +746,19 @@ function Voxblade(owner) {
             //----------------------------------------------------------------------------------------------------------
             let dmg = random(this.dmg_min, this.dmg_max) + random(this.dmg_min, this.dmg_max);
             target.hp -= dmg;
-            console.log(`${this.name} ${this.owner.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
+            console.log(`${this.name} ${this.owner.p_name} menyerang ${target.name} untuk ${dmg} poin damage!`);
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit yang diserang adalah Vexanian Illusionist
             //----------------------------------------------------------------------------------------------------------
-            this.vexanian_check(target);
+            this.vexanian_check(target, dmg);
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit berhasil menurunkan HP terget ke 0
             //----------------------------------------------------------------------------------------------------------
-            if(target.hp <= 0) {
+            if(target.hp <= 0 && !target.is_castle) {
 
-                if(target.is_castle)
-                    console.log(`\nKastil ${player.p_name} telah hancur! Game over!`);
-                else
-                    console.log(get_kill_quote(this, target));
+                console.log(get_kill_quote(this, target));
 
                 console.log(`${this.name} dapat bergerak lagi!`);
                 this.has_moved = false;
@@ -803,7 +813,7 @@ function Vexanian(owner) {
         `Makhluk misterius yang berasal dari bawah laut. Dengan kemampuan\n` +
         `\thipnotisnya, unit ini dapat membuat siapapun yang menyerangnya\n` +
         `\tmelukai diri sendiri. Unit lain yang menyerang unit ini akan\n` +
-        `\tmenerima damage sebesar ${this.dmg_return_mod} dari total damage yang diterima unit\n` +
+        `\tmenerima damage sebesar ${String(this.dmg_return_mod)} dari total damage yang diterima unit\n` +
         `\tini. Jika hasil pembagian ternyata desimal, bulatkan ke bawah`
     );
 }
@@ -827,7 +837,7 @@ function VampireBattlelord(owner) {
 
         `Seorang penyihir yang mengorbankan jiwanya untuk ditawarkan ke\n` +
         `\tiblis demi mendapatkan kekuatan kegelapan. Unit ini mampu\n` +
-        `\tmemulihkan dirinya sebesar ${this.lifesteal_mod} HP dari total damage yang ia berikan\n` +
+        `\tmemulihkan dirinya sebesar ${String(this.lifesteal_mod)} HP dari total damage yang ia berikan\n` +
         `\tsaat ia menyerang unit lain. Jika hasil pembagian ternyata desimal,\n` +
         `\tbulatkan ke bawah. Life steal tidak berlaku jika target adalah kastil!`
     );
@@ -848,15 +858,19 @@ function VampireBattlelord(owner) {
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
 
+        this.owner.damage_dealt += dmg;
+
         //----------------------------------------------------------------------------------------------------------
         // Ability: Life steal
         //----------------------------------------------------------------------------------------------------------
 
-        const heal = Math.floor(dmg * this.lifesteal_mod);
-        this.hp += heal;
-        console.log(
-            `${this.name} menyerap ${heal} HP!`
-        )
+        if(!target.is_castle) {
+            const heal = Math.floor(dmg * this.lifesteal_mod);
+            this.hp += heal;
+            console.log(
+                `${this.name} menyerap ${heal} HP!`
+            )
+        }
     };
 }
 VampireBattlelord.prototype = new Unit();
@@ -1171,6 +1185,7 @@ const Game = {
                 : MAX_CREDIT_GAIN;
 
             player.credit += credit_earning;
+            player.credits_earned += credit_earning;
 
             if(player.credit > MAX_CREDITS)
                 player.credit = MAX_CREDITS;
@@ -1421,12 +1436,28 @@ const Game = {
             if(player.get_castle_hp() <= 0) {
                 console.log(`Kastil ${player.p_name} hancur!`);
                 console.log(`${player.enemy.p_name} memenangkan permainan!`);
-
-                console.log(`Game Over!`);
+                press_any_key();
+                break;
             }
-
-
         }
+
+        console.log(`\n<==== Rekap Pertempuran ====>`);
+        console.log(`Total ronde: ${Game.round} ronde\n`);
+
+        for(let player of Game.players) {
+            console.log(`Rekap performa ${player.p_name}`);
+            console.log(`- Total pendapatan credit  : ${player.credits_earned}`);
+            console.log(`- TOtal pengeluaran credit : ${player.credits_spent}`);
+            console.log(`- Total unit yang dibeli   : ${player.units_bought}`);
+            console.log(`- Total damage diberikan   : ${player.damage_dealt}`);
+            console.log();
+        }
+        press_any_key();
+        console.log();
+
+        console.log(`Game Over!`);
+        press_any_key();
+        console.log(`\n`);
     }
 };
 
