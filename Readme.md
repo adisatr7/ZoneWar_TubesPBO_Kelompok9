@@ -30,14 +30,15 @@ Selamat datang di page GitHub kami! Kami adalah kelompok 9, yang beranggotakan:
 * Satria Adi Nugraha (19104027)  
 * Rifqi Alfinnur Charisma (19104031)  
 
-Page ini adalah hasil kerjasama kelompok kami. Setelah hasil diskusi bersama kami memutuskan untuk membuat game berjudul Zone War: Text Strategy Game. Sesuai dengan judul game ini adalah game strategi yang berbasis text. Berikut adalah aturan mainnya:
+Page ini adalah hasil kerjasama kelompok kami. Setelah hasil diskusi bersama kami memutuskan untuk membuat game berjudul Zone War: Text Strategy Game. Sesuai dengan judul game ini adalah game strategi yang berbasis text.
 
 ## Developer's Logs
 
 #### Known Bugs:
-- [x] ~~AI dapat membeli unit dengan 0 credit~~
-- [x] ~~AI membeli Dwarven Builder walau HP kastilnya masih full~~
-- [x] ~~Lawan memiliki kastil ajaib yang dapat bergerak dan menyerang~~
+- [x] ~~Crash saat menyerang Vexanian Illusionist~~
+- [x] ~~Unit yang sudah mati tapi belum diberi perintah masih bisa diberi perintah (unit zombi?)~~
+- [ ] Beberapa deskripsi yang seharusnya menuliskan nama pemain malah menuliskan `undefined`
+
 
 Menemukan bug? Harap laporkan kepada kami segera!
 
@@ -45,12 +46,12 @@ Menemukan bug? Harap laporkan kepada kami segera!
 - [x] ~~Buat Class Diagram~~
 - [x] ~~Buat program dalam bahasa Javascript!~~
 - [x] ~~Upload ke Github!~~
-- [ ] Temukan bug sebanyak mungkin!
 - [ ] Pastikan tidak ada unit yang overpowered!
+- [ ] Temukan bug sebanyak mungkin!
+- [ ] Perbaiki bug-bug yang sudah ditemukan!
 - [ ] Siapkan materi presentasi!
 - [ ] Buat video presentasi!
 - [ ] Upload video ke YouTube!
-- [ ] Perbaiki bug-bug yang sudah ditemukan!
 
 ## Cara Bermain
 ```
@@ -72,9 +73,7 @@ menentukan siapa yang bergerak duluan di setiap rondenya.
 mereka jaga. Kastil ini memiliki 30 HP dan tidak dapat menyerang.
 6. Di setiap ronde, masing-masing pemain memiliki credit dengan 
 nilai maksimum 10 credits. Setiap ronde, masing-masing pemain 
-mendapatkan credit sejumlah nomor ronde tersebut. Mulai ronde ke-9 
-hingga seterusnya, credit yang diterima masing-masing pemain 
-disamakan, yakni sebesar +9
+mendapatkan credit sejumlah nomor ronde tersebut.
 7. Pada gilirannya, masing-masing pemain dapat:
    - Menggunakan credit untuk membeli pasukan (lihat daftar pasukan 
    di bawah). Jika anda membeli pasukan, pasukan yang baru anda beli 
@@ -118,7 +117,7 @@ disamakan, yakni sebesar +9
 ```
 #### Novice Adventurer
 ```
-Dmg  : random(1,6)
+Dmg  : random(1,4)
 HP   : 6
 Cost : 1 credit
 "Petualang cupu nan polos. Masih perlu banyak belajar mengenai 
@@ -143,9 +142,9 @@ random(1,7)"
 Dmg  : random(1,4)
 HP   : 4
 Cost : 5
-"Seorang kurcaci dengan keahlian seputar bangun-membangun. Saat 
-giliran anda, anda dapat memilih ingin menyerang lawan atau ingin
-memperbaiki kastil anda sebesar random(1,3)"
+"Seorang kurcaci dengan keahlian seputar bangun-membangun. Saat
+anda membeli unit ini, ia akan secara otomatis memperbaiki kastil
+anda sebesar random(1,3)"
 ```
 
 #### Bomber
