@@ -34,6 +34,10 @@ Page ini adalah hasil kerjasama kelompok kami. Setelah hasil diskusi bersama kam
 
 ## Developer's Logs
 
+#### Changelog:
+- Dwarven Builder nerf: Harga dinaikan menjadi 5 credit dan efek heal hanya bisa dipicu saat pertama kali pemain membeli unit ini.
+- Bug dan typo fixes.
+
 #### Known Bugs:
 - [x] ~~Crash saat menyerang Vexanian Illusionist~~
 - [x] ~~Unit yang sudah mati tapi belum diberi perintah masih bisa diberi perintah (unit zombi?)~~
