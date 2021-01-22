@@ -34,15 +34,18 @@ Page ini adalah hasil kerjasama kelompok kami. Setelah hasil diskusi bersama kam
 
 ## Developer's Logs
 
-#### Changelog:
-- Dwarven Builder nerf: Harga dinaikan menjadi 5 credit dan efek heal hanya bisa dipicu saat pertama kali pemain membeli unit ini.
+#### Changelog (v0.3):
+
+- Konversi seluruh class dan sub-class yang semula menggunakan aturan tradisional (Contoh: `function Nightblade`) menjadi standar ES6 (`class Nightblade extends Unit`).
+- Nightblade Infiltrator nerf: Harga dinaikan dari 5 menjadi 6 credit.
+- Berserker Warrior buff: Damage minimal dinaikan dari 1 menjadi 4 damage.
+- Pesan output damage double belati milik Nightblade Infiltrator dan Voxblade Assassin kini ditulis dipisah.
 - Bug dan typo fixes.
 
 #### Known Bugs:
-- [x] ~~Crash saat menyerang Vexanian Illusionist~~
-- [x] ~~Unit yang sudah mati tapi belum diberi perintah masih bisa diberi perintah (unit zombi?)~~
-- [ ] Beberapa deskripsi yang seharusnya menuliskan nama pemain malah menuliskan `undefined`
 
+- [x] ~~AI terus menyerang Colovian Knight walau ia sudah mati~~
+- [x] ~~Crash saat giliran AI jika ia masih memiliki unit yang belum bergerak tetapi tidak ada target untuk diserang~~
 
 Menemukan bug? Harap laporkan kepada kami segera!
 
@@ -166,7 +169,7 @@ unit lain. Jika unit ini meledakkan bomnya, ia akan mati"
 ```
 Dmg  : random(2,7) + random(2,7)
 HP   : 3
-Cost : 5
+Cost : 6
 "Seorang pembunuh bayaran dari dunia bawah tanah dengan keahlian 
 membunuh secara tersembunyi menggunakan dua belatinya. Unit ini 
 tidak dapat diserang kecuali ia sudah pernah menyerang sebelumnya"
@@ -174,7 +177,7 @@ tidak dapat diserang kecuali ia sudah pernah menyerang sebelumnya"
 
 #### Berserker Warrior
 ```
-Dmg  : 1 + random(0, missing_hp)
+Dmg  : 4 + random(0, missing_hp)
 HP   : 9
 Cost : 6
 "Seorang ahli tombak yang berasal dari suku barbar. Memiliki tekad 

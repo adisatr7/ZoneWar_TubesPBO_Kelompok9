@@ -93,15 +93,18 @@ const STRINGS = [
 // Class yang berisikan tentang hal-hal yang berhubungan dengan player game ini
 //======================================================================================================================
 
-function Player(p_name) {
-    this.p_name = p_name;
-    this.formation = [new Castle(this)];
-    this.credit = 0;
+class Player {
 
-    this.credits_earned = 0;
-    this.credits_spent = 0;
-    this.units_bought = 0;
-    this.damage_dealt = 0;
+    constructor(p_name) {
+        this.p_name = p_name;
+        this.formation = [new Castle(this)];
+        this.credit = 0;
+
+        this.credits_earned = 0;
+        this.credits_spent = 0;
+        this.units_bought = 0;
+        this.damage_dealt = 0;
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Method: Get Castle HP
@@ -109,7 +112,7 @@ function Player(p_name) {
     // Mereturn HP kastil milik pemain ini
     //------------------------------------------------------------------------------------------------------------------
 
-    this.get_castle_hp = function() {
+    get_castle_hp = function() {
         return this.formation[0].hp;
     };
 
@@ -119,7 +122,7 @@ function Player(p_name) {
     // Mengatur siapa lawan dari pemain ini. Nantinya berguna saat sedang bertempur
     //------------------------------------------------------------------------------------------------------------------
 
-    this.set_enemy = function(enemy) {
+    set_enemy(enemy) {
         this.enemy = enemy;
     };
 
@@ -129,8 +132,8 @@ function Player(p_name) {
     // Menampilkan seluruh unit TERMASUK kastil milik pemain ini
     //------------------------------------------------------------------------------------------------------------------
 
-    this.show_unit_formation = function() {
-        console.log(`Formasi unit ${p_name}:`);
+    show_unit_formation() {
+        console.log(`Formasi unit ${this.p_name}:`);
         for(let unit of this.formation)
             console.log(`- ${unit.status()}`);
         console.log();
@@ -142,13 +145,12 @@ function Player(p_name) {
     // Mengecek apakah pemain ini memiliki unit yang dapat diberi perintah
     //------------------------------------------------------------------------------------------------------------------
 
-    this.has_movable_unit = function() {
+    has_movable_unit() {
         for(let i=1; i<this.formation.length; i++) {
             if(this.formation[i] !== undefined) {
-                if(!this.formation[i].has_moved)
+                if(!this.formation[i].has_moved && this.formation[i].hp > 0)
                     return true;
             }
-
         }
         return false;
     };
@@ -159,7 +161,7 @@ function Player(p_name) {
     // Mengecek apakah pemain ini memiliki setidaknya satu Colovian Knight
     //------------------------------------------------------------------------------------------------------------------
 
-    this.has_colovian = function() {
+    has_colovian() {
         for(let unit of this.formation) {
             if(unit.hasOwnProperty('is_colovian') && unit.hp > 0)
                 return true;
@@ -173,7 +175,7 @@ function Player(p_name) {
     // Untuk memroses pembelian unit
     //------------------------------------------------------------------------------------------------------------------
 
-    this.buy_unit = function(new_unit) {
+    buy_unit(new_unit) {
         if(new_unit.hasOwnProperty('sabotage'))
             this.enemy.formation.push(new_unit);
         else
@@ -189,21 +191,24 @@ function Player(p_name) {
     //------------------------------------------------------------------------------------------------------------------
     // > Method: Get Attackable Units
     //------------------------------------------------------------------------------------------------------------------
-    // Mereturn array berisi index-index unit-unit yang dapat diserang
+    // Mereturn array berisi objek unit-unit yang dapat diserang
     //------------------------------------------------------------------------------------------------------------------
 
-    this.get_attackable_units = function() {
-        const attackable_unit_index = [];
+    get_attackable_units() {
+        const attackable_units = [];
         const units = this.formation;
 
         //--------------------------------------------------------------------------------------------------------------
-        // Jika pemain ini memiliki setidaknya satu Colovian Knight, masukan HANYA index-index unit tipe ini saja
+        // Jika pemain ini memiliki setidaknya satu Colovian Knight, masukan HANYA unit-unit tipe ini saja
         //--------------------------------------------------------------------------------------------------------------
 
         if(this.has_colovian()) {
-            for(let i=1; i<units.length; i++) {
-                if(this.formation[i].hasOwnProperty('is_colovian'))
-                    attackable_unit_index.push(i)
+            for(let unit of units) {
+                if(unit.hasOwnProperty('is_colovian')) {
+                    if(unit.hp > 0)
+                        attackable_units.push(unit);
+                }
+
             }
         }
 
@@ -213,42 +218,43 @@ function Player(p_name) {
         //--------------------------------------------------------------------------------------------------------------
 
         else {
-            for(let i=0; i<this.formation.length; i++) {
-                if(units[i].hp > 0) {
+            for(let unit of units) {
+                if(unit.hp > 0) {
 
                     //--------------------------------------------------------------------------------------------------
                     // Jika unit dapat bersembunyi, ia harus terlebih dahulu dalam mode TIDAK bersembunyi
                     //--------------------------------------------------------------------------------------------------
-                    if(units[i].hasOwnProperty('is_stealthed')) {
-                        if(!units[i].is_stealthed)
-                            attackable_unit_index.push(i)
+                    if(unit.hasOwnProperty('is_stealthed')) {
+                        if(!unit.is_stealthed)
+                            attackable_units.push(unit)
                     }
 
                     //--------------------------------------------------------------------------------------------------
                     // Jika unit adalah unit normal
                     //--------------------------------------------------------------------------------------------------
                     else {
-                        attackable_unit_index.push(i)
+                        attackable_units.push(unit)
                     }
 
                 }
             }
         }
-        return attackable_unit_index;
+        return attackable_units;
     };
 
     //------------------------------------------------------------------------------------------------------------------
     // > Method: Get Movable Units
     //------------------------------------------------------------------------------------------------------------------
-    // Mereturn array berisi index-index unit yang bisa diberi perintah saat method ini dijalankan
+    // Mereturn array berisi unit-unit yang bisa diberi perintah saat method ini dijalankan
     //------------------------------------------------------------------------------------------------------------------
 
-    this.get_movable_units = function() {
+    get_movable_units = function() {
         const movable_units = [];
+        const units = this.formation;
 
-        for(let i=1; i<this.formation.length; i++) {
-            if(!this.formation[i].has_moved && this.formation[i].hp > 0)
-                movable_units.push(i);
+        for(let unit of units) {
+            if(!unit.has_moved && unit.hp > 0 && !unit.is_castle)
+                movable_units.push(unit);
         }
         return movable_units;
     }
@@ -261,17 +267,19 @@ function Player(p_name) {
 // Class parent semua objek 'unit' yang dapat dimiliki oleh pemain saat permainan berlangsung
 //======================================================================================================================
 
-function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
-    this.owner = owner;             // Nama pemilik unit
-    this.name = name;               // Nama unit
-    this.dmg_min = dmg_min;         // Damage minimal
-    this.dmg_max = dmg_max;         // Damage maksimal
-    this.max_hp = max_hp;           // HP maksimal
-    this.hp = this.max_hp;          // Jumlah HP saat ini
-    this.cost = cost;               // Harga unit (satuan: credit)
-    this.desc = desc;               // Deskripsi unit
-    this.has_moved = true;          // Bernilai true jika sudah bergerak
-    this.is_castle = false;         // Bernilai true jika obyek adalah kastil
+class Unit {
+
+    constructor(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
+        this.owner = owner;             // Nama pemilik unit
+        this.name = name;               // Nama unit
+        this.dmg_min = dmg_min;         // Damage minimal
+        this.dmg_max = dmg_max;         // Damage maksimal
+        this.max_hp = max_hp;           // HP maksimal
+        this.hp = this.max_hp;          // Jumlah HP saat ini
+        this.cost = cost;               // Harga unit (satuan: credit)
+        this.desc = desc;               // Deskripsi unit
+        this.has_moved = true;          // Bernilai true jika sudah bergerak
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Method: Deal Damage
@@ -279,7 +287,7 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
     // Method mengaplikasikan damage ke unit lawan
     //------------------------------------------------------------------------------------------------------------------
 
-    this.deal_damage = function(target) {
+    deal_damage(target) {
         let dmg = random(this.dmg_min, this.dmg_max);
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
@@ -295,7 +303,7 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
     // Mengaplikasikan damage reflection jika unit ini menyerang Vexanian Illusionist
     //------------------------------------------------------------------------------------------------------------------
 
-    this.vexanian_check = function(target, dmg) {
+    vexanian_check(target, dmg) {
         if(target.hasOwnProperty('dmg_return_mod')) {
             dmg = Math.floor(dmg * target.dmg_return_mod);
             this.hp -= dmg;
@@ -311,7 +319,7 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
     // Setiap unit dapat diperintahkan untuk menyerang unit lawan
     //------------------------------------------------------------------------------------------------------------------
 
-    this.attack = function(target) {
+    attack(target) {
 
         //--------------------------------------------------------------------------------------------------------------
         // Jika unit sudah pernah menyerang sebelumnya, unit tidak boleh menyerang lagi hingga ronde berikutnya
@@ -345,7 +353,7 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
     // Menampilkan nama unit dan jumlah HP tersisa. Digunakan nantinya saat permainan berlangsung
     //------------------------------------------------------------------------------------------------------------------
 
-    this.status = function() {
+    status() {
 
         //--------------------------------------------------------------------------------------------------------------
         // Menampilkan nama unit dan HP tersisa
@@ -389,7 +397,7 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
     // Mengambil profile unit (nama, max HP, harga, dan desc)
     //------------------------------------------------------------------------------------------------------------------
 
-    this.get_profile = function() {
+    get_profile() {
         return `${this.name}\n` +
                `\t- Damage : random(${this.dmg_min},${this.dmg_max})\n` +
                `\t- Max HP : ${this.max_hp}\n` +
@@ -403,100 +411,108 @@ function Unit(owner, name, dmg_min, dmg_max, max_hp, cost, desc) {
 // > Sub-class: Castle
 //======================================================================================================================
 
-function Castle(owner) {
-    Unit.call(this,
-        owner,
-        "Castle Fortress",
-        undefined, undefined,
-        30,
-        undefined,
-        `Kastil megah tempat anda memimpin unit-unit anda. Anda dinyatakan\n` +
-        `\tkalah jika kastil anda berhasil dihancurkan`
-    );
+class Castle extends Unit {
+    constructor(owner) {
+        super(owner, "Castle Fortress",
+            undefined, undefined,
+            30,
+            undefined,
 
-    this.is_castle = true;
-    this.has_moved = undefined;
+            `Kastil megah tempat anda memimpin unit-unit anda. Anda dinyatakan\n` +
+            `\tkalah jika kastil anda berhasil dihancurkan`);
+
+        this.is_castle = true;
+        this.has_moved = undefined;
+    }
 }
-Castle.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Novice Adventurer
 //======================================================================================================================
 
-function NoviceAdventurer(owner) {
-    Unit.call(this,
-        owner,
-        "Novice Adventurer",            // Nama unit
-        1, 4,                           // Damage minimal, maksimal
-        6,                              // Max HP
-        1,                              // Harga
+class NoviceAdventurer extends Unit {
 
-        `Petualang cupu nan polos. Masih perlu banyak belajar mengenai\n` +
-        `\tpertempuran. Walau begitu, harganya yang murah memungkinkan unit\n` +
-        `\tini untuk di-spam di medan pertempuran`
-    );
+    constructor(owner) {
+        super(owner,
+            "Novice Adventurer",
+            1, 4,
+            6,
+            1,
+
+            `Petualang cupu nan polos. Masih perlu banyak belajar mengenai\n` +
+            `\tpertempuran. Walau begitu, harganya yang murah memungkinkan unit\n` +
+            `\tini untuk di-spam di medan pertempuran`)
+    }
 }
-NoviceAdventurer.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Saboteur
 //======================================================================================================================
 
-function Saboteur(owner) {
-    const sabotage_min = 1;
-    const sabotage_max = 7;
+class Saboteur extends Unit {
 
-    Unit.call(this,
-        owner,
-        "Saboteur",                     // Nama unit
-        1, 4,                           // Damage minimal, maksimal
-        4,                              // Max HP
-        2,                              // Harga
+    constructor(owner) {
+        const sabotage_min = 1;
+        const sabotage_max = 7;
 
-        `Seorang mata-mata yang dapat anda kirim untuk menyamar dan\n` +
-        `\tmenyabotase kastil lawan. Dengan membeli unit ini, anda akan\n` +
-        `\tmengirimnya ke barisan lawan dan kontrol unit akan diberikan ke tim\n` +
-        `\tlawan. Sebagai gantinya, kastil lawan menerima damage sebesar\n` +
-        `\trandom(${sabotage_min},${sabotage_max})`
-    );
+        super(owner,
+            "Saboteur",
+            1, 4,
+            4,
+            2,
+
+            `Seorang mata-mata yang dapat anda kirim untuk menyamar dan\n` +
+            `\tmenyabotase kastil lawan. Dengan membeli unit ini, anda akan\n` +
+            `\tmengirimnya ke barisan lawan dan kontrol unit akan diberikan ke tim\n` +
+            `\tlawan. Sebagai gantinya, kastil lawan menerima damage sebesar\n` +
+            `\trandom(${sabotage_min},${sabotage_max})`);
+
+        this.sabotage_min = sabotage_min;
+        this.sabotage_max = sabotage_max;
+        this.has_moved = false;
+    }
 
 
-    this.has_moved = false;
 
     //------------------------------------------------------------------------------------------------------------------
     // Unit ini secara otomatis melakukan sabotase kastil lawan saat dibeli oleh pemain
     //------------------------------------------------------------------------------------------------------------------
-    this.sabotage = function() {
-        const sabotage_dmg = random(sabotage_min, sabotage_max);
-        owner.formation[0].hp -= sabotage_dmg;
-        console.log(`Kastil ${owner.p_name} mengalami kerusakan sebesar ${sabotage_dmg} damage!`);
+    sabotage = function() {
+        const sabotage_dmg = random(this.sabotage_min, this.sabotage_max);
+        this.owner.formation[0].hp -= sabotage_dmg;
+        console.log(`Kastil ${this.owner.p_name} mengalami kerusakan sebesar ${sabotage_dmg} damage!`);
     }
 
 }
-Saboteur.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Builder
 //======================================================================================================================
 
-function Builder(owner) {
-    const repair_min = 1;
-    const repair_max = 3;
+class Builder extends Unit {
 
-    Unit.call(this,
-        owner,
-        "Dwarven Builder",              // Nama unit
-        1, 4,                           // Damage minimal, maksimal
-        4,                              // Max HP
-        5,                              // Harga
+    constructor(owner) {
+        const
+            repair_min = 1,
+            repair_max = 3;
 
-        `Seorang kurcaci dengan keahlian seputar bangun-membangun. Saat\n` +
-        `\tanda membeli unit ini, ia akan secara otomatis memperbaiki kastil\n` +
-        `\tanda sebesar random(${repair_min},${repair_max})`
-    );
+        super(
+            owner,
+            "Dwarven Builder",
+            1, 4,
+            4,
+            5,
+
+            `Seorang kurcaci dengan keahlian seputar bangun-membangun. Saat\n` +
+            `\tanda membeli unit ini, ia akan secara otomatis memperbaiki kastil\n` +
+            `\tanda sebesar random(${repair_min},${repair_max})`);
+
+        this.repair_min = repair_min;
+        this.repair_max = repair_max;
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Passive Ability: Repair
@@ -504,8 +520,8 @@ function Builder(owner) {
     // Memperbaiki kastil pemilik unit ini saat pemain membelinya
     //------------------------------------------------------------------------------------------------------------------
 
-    this.repair = function() {
-        const repair_amount = random(repair_min, repair_max);
+    repair() {
+        const repair_amount = random(this.repair_min, this.repair_max);
         this.owner.formation[0].hp += repair_amount;
 
         if(this.owner.formation[0].hp > 30)
@@ -514,26 +530,28 @@ function Builder(owner) {
         console.log(`${this.name} ${this.owner.p_name} telah memulihkan HP kastil sebesar ${repair_amount} poin!`);
     }
 }
-Builder.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Bomber
 //======================================================================================================================
 
-function Bomber(owner) {
-    Unit.call(this,
-        owner,
-        "Bomber",                       // Nama unit
-        5, 12,                          // Damage minimal, maksimal
-        5,                              // Max HP
-        3,                              // Harga
+class Bomber extends Unit {
 
-        `Seorang prajurit berani mati yang gagah berani. Unit ini menyerang\n` +
-        `\tdengan cara meledakkan bom yang diikat di tubuhnya. Bom hanya akan\n` +
-        `\tmeledak jika ia menyerang, tetapi tidak jika ia mati karena dibunuh\n` +
-        `\tunit lain. Jika unit ini meledakkan bomnya, ia akan mati`
-    );
+    constructor(owner) {
+        super(
+            owner,
+            "Bomber",
+            5, 12,
+            5,
+            3,
+
+            `Seorang prajurit berani mati yang gagah berani. Unit ini menyerang\n` +
+            `\tdengan cara meledakkan bom yang diikat di tubuhnya. Bom hanya akan\n` +
+            `\tmeledak jika ia menyerang, tetapi tidak jika ia mati karena dibunuh\n` +
+            `\tunit lain. Jika unit ini meledakkan bomnya, ia akan mati`
+        )
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Override Method: deal_damage(target)
@@ -541,7 +559,7 @@ function Bomber(owner) {
     // Unit ini akan mati saat ia melakukan penyerangan
     //------------------------------------------------------------------------------------------------------------------
 
-    this.deal_damage = function(target) {
+    deal_damage(target) {
 
         //--------------------------------------------------------------------------------------------------------------
         // Kalkulasi random damage
@@ -562,34 +580,36 @@ function Bomber(owner) {
         this.hp = 0;
     };
 }
-Bomber.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Nightblade Infiltrator
 //======================================================================================================================
 
-function Nightblade(owner) {
-    Unit.call(this,
-        owner,
-        "Nightblade Infiltrator",       // Nama unit
-        2, 7,                           // Damage minimal dan maksimal masing-masing belati (ia membawa 2)
-        3,                              // Max HP
-        5,                              // Harga
+class Nightblade extends Unit {
 
-        `Seorang pembunuh bayaran dari dunia bawah tanah dengan keahlian\n` +
-        `\tmembunuh secara tersembunyi menggunakan dua belatinya. Unit ini\n` +
-        `\ttidak dapat diserang kecuali ia sudah pernah menyerang sebelumnya`
-    );
+    constructor(owner) {
+        super(
+            owner,
+            "Nightblade Infiltrator",
+            2, 7,
+            3,
+            6,
 
-    //------------------------------------------------------------------------------------------------------------------
-    // > Attribute: Is Stealthed?
-    //------------------------------------------------------------------------------------------------------------------
-    // Story-wise, unit ini adalah unit ahli bersembunyi dan menyamar. Gemeplay-wise, selama unit ini belum pernah
-    // menyerang, lawan tidak dapat menyerang unit ini karena keberadaannya tidak diketahui.
-    //------------------------------------------------------------------------------------------------------------------
+            `Seorang pembunuh bayaran dari dunia bawah tanah dengan keahlian\n` +
+            `\tmembunuh secara tersembunyi menggunakan dua belatinya. Unit ini\n` +
+            `\ttidak dapat diserang kecuali ia sudah pernah menyerang sebelumnya`
+        );
 
-    this.is_stealthed = true;
+        //--------------------------------------------------------------------------------------------------------------
+        // > Attribute: Is Stealthed?
+        //--------------------------------------------------------------------------------------------------------------
+        // Story-wise, unit ini adalah unit ahli bersembunyi dan menyamar. Gemeplay-wise, selama unit ini belum pernah
+        // menyerang, lawan tidak dapat menyerang unit ini karena keberadaannya tidak diketahui.
+        //--------------------------------------------------------------------------------------------------------------
+
+        this.is_stealthed = true;
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Override Method: Deal Damage
@@ -597,17 +617,21 @@ function Nightblade(owner) {
     // Unit ini menggunakan dual dagger dan memiliki sistem stealth yang unik
     //------------------------------------------------------------------------------------------------------------------
 
-    this.deal_damage = function(target) {
+    deal_damage(target) {
 
         //----------------------------------------------------------------------------------------------------------
         // Kalkulasi random damage dan aksi penyerangan
         //----------------------------------------------------------------------------------------------------------
 
-        let dmg = random(this.dmg_min, this.dmg_max) + random(this.dmg_min, this.dmg_max);
-        target.hp -= dmg;
-        console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
+        let dmg1 = random(this.dmg_min, this.dmg_max);
+        let dmg2 = random(this.dmg_min, this.dmg_max);
+        let dmg_total = dmg1 + dmg2;
+        target.hp -= dmg_total;
+        console.log(`${this.name} menyerang ${target.name} untuk ${dmg1} + ${dmg2} (${dmg1 + dmg2}) poin damage!`);
 
-        this.owner.damage_dealt += dmg;
+        this.owner.damage_dealt += dmg_total;
+
+        this.vexanian_check(target, dmg_total);
 
         //----------------------------------------------------------------------------------------------------------
         // Nyatakan bahwa unit tak lagi tersembunyi dan dapat diserang oleh lawan
@@ -626,7 +650,7 @@ function Nightblade(owner) {
     // Unit ini memiliki attack formula yang berbeda karena ia dilengkapi dengan dua buah belati
     //------------------------------------------------------------------------------------------------------------------
 
-    this.get_profile = function() {
+    get_profile() {
         return `${this.name}\n` +
                `\t- Damage : random(${this.dmg_min},${this.dmg_max}) + random(${this.dmg_min},${this.dmg_max})\n` +
                `\t- Max HP : ${this.max_hp}\n` +
@@ -634,26 +658,28 @@ function Nightblade(owner) {
                `\t\"${this.desc}\"\n`;
     };
 }
-Nightblade.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Berserker Warrior
 //======================================================================================================================
 
-function Berserker(owner) {
-    Unit.call(this,
-        owner,
-        "Berserker Warrior",            // Nama unit
-        0, undefined,                   // Damage minimal, maksimal
-        9,                              // Max HP
-        6,                              // Harga
+class Berserker extends Unit {
 
-        `Seorang ahli tombak yang berasal dari suku barbar. Memiliki tekad\n` +
-        `\tdan semangat bertarung yang sangat tinggi. Semakin unit ini\n` +
-        `\tterluka, semakin besar potensi damage yang ia berikan ke\n` +
-        `\tunit/kastil lawan`
-    );
+    constructor(owner) {
+        super(
+            owner,
+            "Berserker Warrior",
+            4, undefined,
+            9,
+            6,
+
+            `Seorang ahli tombak yang berasal dari suku barbar. Memiliki tekad\n` +
+            `\tdan semangat bertarung yang sangat tinggi. Semakin unit ini\n` +
+            `\tterluka, semakin besar potensi damage yang ia berikan ke\n` +
+            `\tunit/kastil lawan`
+        );
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Override Method: Deal Damage
@@ -661,12 +687,14 @@ function Berserker(owner) {
     // Damage unit ini berubah tergantung jumlah HP yang dimiliki saat unit ini melakukan serangan
     //------------------------------------------------------------------------------------------------------------------
 
-    this.deal_damage = function (target) {
+    deal_damage(target) {
         const missing_hp = this.max_hp - this.hp;
-        let dmg = 1 + random(this.dmg_min, missing_hp);
+        let dmg = this.dmg_min + random(0, missing_hp);
 
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} dengan ${dmg} poin damage!`);
+
+        this.vexanian_check(target, dmg);
 
         this.owner.damage_dealt += dmg;
     };
@@ -677,54 +705,59 @@ function Berserker(owner) {
     // Unit ini memiliki damage calculation berbeda dari unit lain
     //------------------------------------------------------------------------------------------------------------------
 
-    this.get_profile = function() {
+    get_profile() {
         return `${this.name}\n` +
-               `\t- Damage : 1 + random(${this.dmg_min}, missing_hp)\n` +
+               `\t- Damage : ${this.dmg_min} + random(0, missing_hp)\n` +
                `\t- Max HP : ${this.max_hp}\n` +
                `\t- Cost   : ${this.cost} credit(s)\n` +
                `\t\"${this.desc}\"\n`;
     };
 }
-Berserker.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Colovian Knight
 //======================================================================================================================
 
-function ColovianKnight(owner) {
-    this.is_colovian = true;
-    Unit.call(this,
-        owner,
-        "Colovian Knight",              // Nama unit
-        2, 5,                           // Damage minimal, maksimal
-        13,                             // Max HP
-        6,                              // Harga
+class ColovianKnight extends Unit {
 
-        `Seorang ksatria yang bersumpah untuk melindungi orang-orang di\n` +
-        `\tsekitarnya. Selama unit ini ada di formasi unit anda, lawan anda\n` +
-        `\ttidak bisa menyerang unit lain hingga unit ini mati terlebih dahulu`
-    );
+    constructor(owner) {
+        super(
+            owner,
+            "Colovian Knight",
+            2, 5,
+            13,
+            6,
+
+            `Seorang ksatria yang bersumpah untuk melindungi orang-orang di\n` +
+            `\tsekitarnya. Selama unit ini ada di formasi unit anda, lawan anda\n` +
+            `\ttidak bisa menyerang unit lain hingga unit ini mati terlebih dahulu`
+        );
+
+        this.is_colovian = true;
+    }
 }
-ColovianKnight.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Voxblade Assassin
 //======================================================================================================================
 
-function Voxblade(owner) {
-    Unit.call(this,
-        owner,
-        "Voxblade Assassin",            // Nama unit
-        1, 3,                           // Damage minimal dan maksimal masing-masing belati (ia membawa 2)
-        5,                              // Max HP
-        7,                              // Harga
+class Voxblade extends Unit {
 
-        `Seorang pembunuh bayaran yang merupakan pengikut dan pemuja dewi\n` +
-        `\tkematian. Setiap kali unit ini melakukan kill terhadap unit lain,\n` +
-        `\tanda dapat memerintahkannya untuk menyerang lagi`
-    );
+    constructor(owner) {
+        super(
+            owner,
+            "Voxblade Assassin",
+            1, 3,
+            5,
+            7,
+
+            `Seorang pembunuh bayaran yang merupakan pengikut dan pemuja dewi\n` +
+            `\tkematian. Setiap kali unit ini melakukan kill terhadap unit lain,\n` +
+            `\tanda dapat memerintahkannya untuk menyerang lagi`
+        );
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Override Method: Attack
@@ -733,7 +766,7 @@ function Voxblade(owner) {
     // ia berhasil melakukan kill
     //------------------------------------------------------------------------------------------------------------------
 
-    this.attack = function(target) {
+    attack(target) {
 
         //--------------------------------------------------------------------------------------------------------------
         // Jika unit gagal melakukan kill atau baru saja dibeli pemain, unit ini tidak dapat menyerang
@@ -744,14 +777,21 @@ function Voxblade(owner) {
             //----------------------------------------------------------------------------------------------------------
             // Kalkulasi random damage dan aksi penyerangan
             //----------------------------------------------------------------------------------------------------------
-            let dmg = random(this.dmg_min, this.dmg_max) + random(this.dmg_min, this.dmg_max);
-            target.hp -= dmg;
-            console.log(`${this.name} ${this.owner.p_name} menyerang ${target.name} untuk ${dmg} poin damage!`);
+            const
+                dmg1 = random(this.dmg_min, this.dmg_max),
+                dmg2 = random(this.dmg_min, this.dmg_max),
+                total_dmg = dmg1 + dmg2;
+
+            target.hp -= total_dmg;
+            console.log(
+                `${this.name} ${this.owner.p_name} menyerang ${target.name} untuk ${dmg1} + ${dmg2} (${total_dmg}) `+
+                `poin damage!`
+            );
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit yang diserang adalah Vexanian Illusionist
             //----------------------------------------------------------------------------------------------------------
-            this.vexanian_check(target, dmg);
+            this.vexanian_check(target, total_dmg);
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit berhasil menurunkan HP terget ke 0
@@ -784,63 +824,81 @@ function Voxblade(owner) {
     // Unit ini memiliki attack formula yang berbeda karena ia dilengkapi dengan dua buah belati
     //------------------------------------------------------------------------------------------------------------------
 
-    this.get_profile = function() {
+    get_profile() {
         return `${this.name}\n` +
                `\t- Damage : random(${this.dmg_min},${this.dmg_max}) + random(${this.dmg_min},${this.dmg_max})\n` +
                `\t- Max HP : ${this.max_hp}\n` +
                `\t- Cost   : ${this.cost} credit(s)\n` +
                `\t\"${this.desc}\"\n`;
     };
-
 }
-Voxblade.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Vexanian Illusionist
 //======================================================================================================================
 
-function Vexanian(owner) {
-    this.dmg_return_mod = 1/2;          // Modifier damage yang dikembalikan
+class Vexanian extends Unit {
 
-    Unit.call(this,
-        owner,
-        "Vexanian Illusionist",         // Nama unit
-        3, 6,                           // Damage minimal, maksimal
-        11,                             // Max HP
-        8,                              // Harga
+    constructor(owner) {
+        const dmg_return_mod = 1/2;
 
-        `Makhluk misterius yang berasal dari bawah laut. Dengan kemampuan\n` +
-        `\thipnotisnya, unit ini dapat membuat siapapun yang menyerangnya\n` +
-        `\tmelukai diri sendiri. Unit lain yang menyerang unit ini akan\n` +
-        `\tmenerima damage sebesar ${String(this.dmg_return_mod)} dari total damage yang diterima unit\n` +
-        `\tini. Jika hasil pembagian ternyata desimal, bulatkan ke bawah`
-    );
+        super(
+            owner,
+            "Vexanian Illusionist",
+            3, 6,
+            11,
+            8,
+
+            `Makhluk misterius yang berasal dari bawah laut. Dengan kemampuan\n` +
+            `\thipnotisnya, unit ini dapat membuat siapapun yang menyerangnya\n` +
+            `\tmelukai diri sendiri. Unit lain yang menyerang unit ini akan\n` +
+            `\tmenerima damage sebesar ${String(dmg_return_mod)} dari total damage yang diterima unit\n` +
+            `\tini. Jika hasil pembagian ternyata desimal, bulatkan ke bawah`
+        );
+
+        //--------------------------------------------------------------------------------------------------------------
+        // > Attribute: Damage Return Modifier
+        //--------------------------------------------------------------------------------------------------------------
+        // Siapapun yang menyerang unit ini akan menerima damage sebesar modifier berikut
+        //--------------------------------------------------------------------------------------------------------------
+
+        this.dmg_return_mod = dmg_return_mod;
+    }
 }
-Vexanian.prototype = new Unit();
 
 
 //======================================================================================================================
 // > Sub-class: Vampire Battlelord
 //======================================================================================================================
 
-// TODO: Mark for nerf
-function VampireBattlelord(owner) {
-    this.lifesteal_mod = 1/2;           // Modifier life steal
+class VampireBattlelord extends Unit {
 
-    Unit.call(this,
-        owner,
-        "Vampire Battlelord",           // Nama unit
-        2, 8,                           // Damage minimal, maksimal
-        8,                              // Max HP
-        8,                              // Harga
+    constructor(owner) {
+        const lifesteal_mod = 1/2;
 
-        `Seorang penyihir yang mengorbankan jiwanya untuk ditawarkan ke\n` +
-        `\tiblis demi mendapatkan kekuatan kegelapan. Unit ini mampu\n` +
-        `\tmemulihkan dirinya sebesar ${String(this.lifesteal_mod)} HP dari total damage yang ia berikan\n` +
-        `\tsaat ia menyerang unit lain. Jika hasil pembagian ternyata desimal,\n` +
-        `\tbulatkan ke bawah. Life steal tidak berlaku jika target adalah kastil!`
-    );
+        super(
+            owner,
+            "Vampire Battlelord",           // Nama unit
+            2, 8,                           // Damage minimal, maksimal
+            8,                              // Max HP
+            8,                              // Harga
+
+            `Seorang penyihir yang mengorbankan jiwanya untuk ditawarkan ke\n` +
+            `\tiblis demi mendapatkan kekuatan kegelapan. Unit ini mampu\n` +
+            `\tmemulihkan dirinya sebesar ${String(lifesteal_mod)} HP dari total damage yang ia berikan\n` +
+            `\tsaat ia menyerang unit lain. Jika hasil pembagian ternyata desimal,\n` +
+            `\tbulatkan ke bawah. Life steal tidak berlaku jika target adalah kastil!`
+        );
+
+        //--------------------------------------------------------------------------------------------------------------
+        // > Attribute: Life Steal Modifier
+        //--------------------------------------------------------------------------------------------------------------
+        // Unit ini mencuri HP dari target yang diserangnya sebesar modifier berikut
+        //--------------------------------------------------------------------------------------------------------------
+
+        this.lifesteal_mod = lifesteal_mod;
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Override Method: Deal Damage
@@ -848,11 +906,11 @@ function VampireBattlelord(owner) {
     // Unit ini melakukan heal pada diri sendiri setiap kali ia menyerang unit lain
     //------------------------------------------------------------------------------------------------------------------
 
-    this.deal_damage = function(target) {
+    deal_damage(target) {
 
-        //----------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
         // Kalkulasi random damage dan aksi penyerangan
-        //----------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
 
         const dmg = random(this.dmg_min, this.dmg_max);
         target.hp -= dmg;
@@ -860,9 +918,9 @@ function VampireBattlelord(owner) {
 
         this.owner.damage_dealt += dmg;
 
-        //----------------------------------------------------------------------------------------------------------
-        // Ability: Life steal
-        //----------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
+        // Ability: Life steal (Tidak berlaku pada castle!)
+        //--------------------------------------------------------------------------------------------------------------
 
         if(!target.is_castle) {
             const heal = Math.floor(dmg * this.lifesteal_mod);
@@ -871,9 +929,10 @@ function VampireBattlelord(owner) {
                 `${this.name} menyerap ${heal} HP!`
             )
         }
+
+        this.vexanian_check(target, dmg);
     };
 }
-VampireBattlelord.prototype = new Unit();
 
 
 //======================================================================================================================
@@ -881,7 +940,7 @@ VampireBattlelord.prototype = new Unit();
 //======================================================================================================================
 
 //======================================================================================================================
-// > Prototype Function: Array.remove(value)
+// > Prototype Function: Remove Array Element by Value
 //----------------------------------------------------------------------------------------------------------------------
 // Menghapus elemen array tertentu
 //======================================================================================================================
@@ -899,14 +958,25 @@ Array.prototype.remove = function() {
 
 
 //======================================================================================================================
+// > Prototype Function: Minimum Array Element
+//----------------------------------------------------------------------------------------------------------------------
+// Mencari nilai terkecil dalam sebuah array
+//======================================================================================================================
+
+Array.min = function( array ){
+    return Math.min.apply( Math, array );
+};
+
+
+//======================================================================================================================
 // > Function: Press Any Key
 //----------------------------------------------------------------------------------------------------------------------
 // Meminta user untuk menekan sembarang tombol terlebih dahulu sebelum melanjutkan
 //======================================================================================================================
 
-function press_any_key() {
-    const pak = require('prompt-sync')();
-    pak(`Tekan sembarang tombol untuk melanjutkan...`);
+function press_enter_to_continue() {
+    const enter = require('prompt-sync')();
+    enter(`Tekan [ENTER] untuk melanjutkan...`);
 }
 
 
@@ -968,7 +1038,6 @@ function get_kill_quote(attacker, victim) {
             `${victim.name} dipanggil Yang Maha Kuasa!`,
             `${victim.name} dibawa ke neraka!`,
             `${victim.name} telah dijemput kematian!`,
-            `${victim.name} mati!`,
             `${victim.name} mati!`
         ],
 
@@ -1026,20 +1095,81 @@ const Game = {
     //------------------------------------------------------------------------------------------------------------------
     ai: {
 
+        //------------------------------------------------------------------------------------------------------------------
+        // NEW: AI kini pintar memilih target mana yang harus dinetralisir terlebih dahulu
+        //------------------------------------------------------------------------------------------------------------------
+        enhanced_target_acquisition(attacker) {
+            const attackable_units = ai.enemy.get_attackable_units();
+            const target_priority = [
+                Game.units[4],  // Nightblade
+                Game.units[3],  // Bomber
+                Game.units[7],  // Voxblade
+                Game.units[9]   // VampireBattlelord
+            ];
+
+            //----------------------------------------------------------------------------------------------------------
+            // Memprioritaskan unit-unit di atas untuk diserang terlebih dahulu
+            //----------------------------------------------------------------------------------------------------------
+            for(let target of attackable_units) {
+                for(let i=0; i<target_priority; i++) {
+                    if(target.name === target_priority[i])
+                        return target;
+                }
+            }
+
+            //----------------------------------------------------------------------------------------------------------
+            // Jika unit yang menyerang adalah Nightblade, serang kastil. Jika lawan memiliki Colovian, serang
+            // Coloviannya!
+            //----------------------------------------------------------------------------------------------------------
+            if(attacker.hasOwnProperty('is_stealthed'))
+                return attackable_units[0];
+
+            //----------------------------------------------------------------------------------------------------------
+            // Jika unit-unit di atas tidak dimiliki oleh lawan, prioritaskan unit dengan HP terkecil
+            //----------------------------------------------------------------------------------------------------------
+            const all_units_hp = [];
+
+            for(let target of attackable_units) {
+                all_units_hp.push(target.hp);
+            }
+
+            for(let target of attackable_units) {
+                if(target.hp === Array.min(all_units_hp))
+                    return target;
+            }
+
+            // OLD: return random(0, attackable_units.length -1)
+        },
+
+        //--------------------------------------------------------------------------------------------------------------
+        // NEW: AI kini pintar membeli unit
+        //--------------------------------------------------------------------------------------------------------------
+        enhanced_production() {
+
+            //----------------------------------------------------------------------------------------------------------
+            // Jika kastil lawan low dan lawan memiliki Colovian Knight
+            //----------------------------------------------------------------------------------------------------------
+            if(ai.credit >= Game.units[1].cost && ai.enemy.get_castle_hp() < 5 && ai.enemy.has_colovian())
+                return 2;
+
+                //----------------------------------------------------------------------------------------------------------
+                // Random decision making (default)
+            //----------------------------------------------------------------------------------------------------------
+            else
+                return random(0,10);
+        },
+
         //--------------------------------------------------------------------------------------------------------------
         // Berisi behavior serang-menyerang
         //--------------------------------------------------------------------------------------------------------------
-        attack_order() {
+        combat_module() {
             if(ai.has_movable_unit()) {
-                for(let i=1; i<ai.formation.length; i++) {
-                    const unit = ai.formation[i];
-                    if(!unit.has_moved && unit.hp > 0) {
+                for(let unit of ai.formation) {
+                    if(ai.enemy.get_attackable_units().length <= 0)
+                        break;
 
-                        const attackable_units = p1.get_attackable_units();
-
-                        const i = random(0, attackable_units.length -1);
-                        const target = p1.formation[attackable_units[i]];
-
+                    if(!unit.has_moved && unit.hp > 0 && !unit.is_castle) {
+                        const target = Game.ai.enhanced_target_acquisition(unit);
                         unit.attack(target);
                     }
                 }
@@ -1049,70 +1179,92 @@ const Game = {
         //--------------------------------------------------------------------------------------------------------------
         // Berisi behavior beli-membeli
         //--------------------------------------------------------------------------------------------------------------
-        buy() {
+        production_module() {
             let stop_turn = false;
             while(!stop_turn) {
-                let decision = random(0,10);
+
+                let decision = Game.ai.enhanced_production();
+
+                let has_enough_credit;
+                let has_other_unit = ai.formation.length > ai.enemy.formation.length;
 
                 switch(decision) {
                     case 0: // Save credit (tidak beli apa-apa)
-                        // TODO: Evaluasi -> if(ai.credit < 3)
-                        stop_turn = true;
+                        if(ai.enemy.formation.length >= ai.formation.length || ai.credit < 3)
+                            stop_turn = true;
                         break;
 
                     case 1: // Novice Adv
-                        if(ai.credit >= Game.units[decision-1].cost) {
-                            ai.buy_unit(new NoviceAdventurer(ai));
-                        }
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
 
+                        if(has_enough_credit)
+                            ai.buy_unit(new NoviceAdventurer(ai));
                         break;
 
                     case 2:     // Saboteur
-                        if(ai.credit >= Game.units[decision-1].cost) {
-                            ai.buy_unit(new Saboteur(p1));
-                            ai.enemy.formation[ai.enemy.formation.length -1].sabotage();
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit && has_other_unit) {
+                            ai.buy_unit(new Saboteur(ai.enemy));
+                            ai.enemy.formation[ai.enemy.formation.length - 1].sabotage();
                         }
                         break;
 
                     case 3:     // Builder
-                        if(ai.credit >= Game.units[decision-1].cost && ai.get_castle_hp() < 30) {
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit && ai.get_castle_hp() < 30) {
                             ai.buy_unit(new Builder(ai));
-                            ai.formation[ai.formation.length -1].repair();
+                            ai.formation[ai.formation.length - 1].repair();
                         }
                         break;
 
                     case 4:     // Bomber
-                        if(ai.credit >= Game.units[decision-1].cost)
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit && has_other_unit)
                             ai.buy_unit(new Bomber(ai));
                         break;
 
                     case 5:     // Nightblade
-                        if(ai.credit >= Game.units[decision-1].cost)
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit)
                             ai.buy_unit(new Nightblade(ai));
                         break;
 
                     case 6:     // Berserker
-                        if(ai.credit >= Game.units[decision-1].cost)
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit)
                             ai.buy_unit(new Berserker(ai));
                         break;
 
                     case 7:     // Colovian Knight
-                        if(ai.credit >= Game.units[decision-1].cost)
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit)
                             ai.buy_unit(new ColovianKnight(ai));
                         break;
 
                     case 8:     // Voxblade
-                        if(ai.credit >= Game.units[decision-1].cost)
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit)
                             ai.buy_unit(new Voxblade(ai));
                         break;
 
                     case 9:     // Vexanian
-                        if(ai.credit >= Game.units[decision-1].cost)
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit)
                             ai.buy_unit(new Vexanian(ai));
                         break;
 
                     case 10:    // Vampire Battlelord
-                        if(ai.credit >= Game.units[decision-1].cost)
+                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+
+                        if(has_enough_credit)
                             ai.buy_unit(new VampireBattlelord(ai));
                         break;
 
@@ -1126,10 +1278,10 @@ const Game = {
         // Dipanggil setiap kali giliran Ai bergerak tiba
         //--------------------------------------------------------------------------------------------------------------
         start_turn() {
-            Game.ai.attack_order();
-            Game.ai.buy();
+            Game.ai.combat_module();
+            Game.ai.production_module();
             console.log(`${ai.p_name} mengakhiri gilirannya!\n`);
-            press_any_key();
+            press_enter_to_continue();
             console.log();
             Game.end_turn();
         }
@@ -1158,7 +1310,7 @@ const Game = {
         ai.set_enemy(p1);
 
         console.log(`${Game.players[0].p_name} bergerak duluan!`);
-        press_any_key();
+        press_enter_to_continue();
         console.log(`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n`)
     },
 
@@ -1209,7 +1361,7 @@ const Game = {
         //--------------------------------------------------------------------------------------------------------------
         // Jika kedua pemain sudah sama-sama bergerak, masuk ke ronde berikutnya!
         //--------------------------------------------------------------------------------------------------------------
-        if (Game.turn === 1)
+        if(Game.turn === 1)
             Game.next_round();
 
         //--------------------------------------------------------------------------------------------------------------
@@ -1222,12 +1374,12 @@ const Game = {
         //--------------------------------------------------------------------------------------------------------------
         // Singkirkan unit mati dari formasi pertempuran
         //--------------------------------------------------------------------------------------------------------------
-        for (let player of Game.players) {
-            for (let unit of player.formation) {
-                if (unit.hp <= 0)
-                    player.formation.remove(unit);
-            }
+        const player = Game.players[Game.turn] === ai ? p1 : ai;
+        for(let unit of player.formation) {
+            if (unit.hp <= 0)
+                player.formation.remove(unit);
         }
+
     },
 
     //------------------------------------------------------------------------------------------------------------------
@@ -1283,12 +1435,12 @@ const Game = {
 
                         if(select < 0 || select >= Game.units.length) {
                             console.log(`Error: Input tidak dapat diterima!`);
-                            press_any_key();
+                            press_enter_to_continue();
                         }
 
                         else if(p1.credit < Game.units[select].cost) {
                             console.log(`Anda tidak memiliki cukup credit untuk membeli unit ini!`);
-                            press_any_key();
+                            press_enter_to_continue();
                         }
 
                         else {
@@ -1338,7 +1490,7 @@ const Game = {
                                 default:
                                     break;
                             }
-                            press_any_key();
+                            press_enter_to_continue();
                         }
 
                         console.log(``);
@@ -1349,45 +1501,49 @@ const Game = {
                             const moveable_units = p1.get_movable_units();
 
                             console.log(`<=== Command Menu ===>\n`);
-                            for(let i=0; i<moveable_units.length; i++) {
-                                console.log(`${i+1}. ${p1.formation[moveable_units[i]].status()}`);
+                            let i=0;
+                            for(let unit of moveable_units) {
+                                console.log(`${i+1}. ${unit.status()}`);
+                                i++;
                             }
                             console.log();
                             const select_unit = input_number("Pilih unit untuk dikomando: ") -1;
 
                             if(select_unit < 0 || select_unit >= moveable_units.length) {
                                 console.log(`Error: Input invalid!`);
-                                press_any_key();
+                                press_enter_to_continue();
                                 break;
                             }
 
                             //------------------------------------------------------------------------------------------
 
-                            const attackable_target = ai.get_attackable_units();
+                            const attackable_targets = ai.get_attackable_units();
 
                             console.log(`\n<=== Formasi Unit Lawan ===>\n`);
-                            for(let i=0; i<attackable_target.length; i++) {
-                                console.log(`${i+1}. ${ai.formation[attackable_target[i]].status()}`);
+                            i=0;
+                            for(let target of attackable_targets) {
+                                console.log(`${i+1}. ${target.status()}`);
+                                i++;
                             }
                             console.log();
                             const select_target = input_number("Pilih target untuk diserang: ") -1;
 
-                            if(select_target < 0 || select_target >= attackable_target.length) {
+                            if(select_target < 0 || select_target >= attackable_targets.length) {
                                 console.log(`Error: Input invalid!`);
-                                press_any_key();
+                                press_enter_to_continue();
                                 break;
                             }
 
-                            const unit = p1.formation[moveable_units[select_unit]];
-                            const target = ai.formation[attackable_target[select_target]];
+                            const unit = moveable_units[select_unit];
+                            const target = attackable_targets[select_target];
 
                             unit.attack(target);
-                            press_any_key();
+                            press_enter_to_continue();
                         }
 
                         else {
                             console.log(`Anda tidak memiliki unit yang dapat diberi perintah saat ini!`);
-                            press_any_key();
+                            press_enter_to_continue();
                         }
                         console.log();
                         break;
@@ -1398,8 +1554,8 @@ const Game = {
                         break;
 
                     default:
-                        console.log(`Error: Masukan yang benar!\n`);
-                        press_any_key();
+                        console.log(`Error: Masukan yang benar!`);
+                        press_enter_to_continue();
                         break;
                 }
 
@@ -1436,7 +1592,7 @@ const Game = {
             if(player.get_castle_hp() <= 0) {
                 console.log(`Kastil ${player.p_name} hancur!`);
                 console.log(`${player.enemy.p_name} memenangkan permainan!`);
-                press_any_key();
+                press_enter_to_continue();
                 break;
             }
         }
@@ -1452,11 +1608,14 @@ const Game = {
             console.log(`- Total damage diberikan   : ${player.damage_dealt}`);
             console.log();
         }
-        press_any_key();
+        press_enter_to_continue();
         console.log();
 
         console.log(`Game Over!`);
-        press_any_key();
+        press_enter_to_continue();
+
+        Game.players.pop();
+        Game.players.pop();
         console.log(`\n`);
     }
 };
