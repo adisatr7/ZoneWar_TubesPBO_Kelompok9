@@ -37,6 +37,7 @@ Page ini adalah hasil kerjasama kelompok kami. Setelah hasil diskusi bersama kam
 #### Changelog (v0.4):
 
 - Daftar unit yang ditampilkan saat pemain membeli unit kini ditampilkan secara urut berdasarkan harga creditnya.
+- Menghadirkan mode baru: Multiplayer Player vs Player.
 - HP unit kini ditampilkan di sebelah kiri (`Bomber (5/5 HP)` menjadi `[5/5 HP] Bomber`).
 - Dwarven Builder buff: Repair max dinaikan dari 3 ke 4.
 - Bug dan typo fixes.
