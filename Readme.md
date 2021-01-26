@@ -34,18 +34,16 @@ Page ini adalah hasil kerjasama kelompok kami. Setelah hasil diskusi bersama kam
 
 ## Developer's Logs
 
-#### Changelog (v0.3):
+#### Changelog (v0.4):
 
-- Konversi seluruh class dan sub-class yang semula menggunakan aturan tradisional (Contoh: `function Nightblade`) menjadi standar ES6 (`class Nightblade extends Unit`).
-- Nightblade Infiltrator nerf: Harga dinaikan dari 5 menjadi 6 credit.
-- Berserker Warrior buff: Damage minimal dinaikan dari 1 menjadi 4 damage.
-- Pesan output damage double belati milik Nightblade Infiltrator dan Voxblade Assassin kini ditulis dipisah.
+- Daftar unit yang ditampilkan saat pemain membeli unit kini ditampilkan secara urut berdasarkan harga creditnya.
+- HP unit kini ditampilkan di sebelah kiri (`Bomber (5/5 HP)` menjadi `[5/5 HP] Bomber`).
+- Dwarven Builder buff: Repair max dinaikan dari 3 ke 4.
 - Bug dan typo fixes.
 
 #### Known Bugs:
 
-- [x] ~~AI terus menyerang Colovian Knight walau ia sudah mati~~
-- [x] ~~Crash saat giliran AI jika ia masih memiliki unit yang belum bergerak tetapi tidak ada target untuk diserang~~
+- [x] Dwarven Builder tidak memperbaiki kastil saat dipanggil.
 
 Menemukan bug? Harap laporkan kepada kami segera!
 
@@ -151,7 +149,7 @@ HP   : 4
 Cost : 5
 "Seorang kurcaci dengan keahlian seputar bangun-membangun. Saat
 anda membeli unit ini, ia akan secara otomatis memperbaiki kastil
-anda sebesar random(1,3)"
+anda sebesar random(1,4)"
 ```
 
 #### Bomber

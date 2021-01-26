@@ -112,7 +112,7 @@ class Player {
     // Mereturn HP kastil milik pemain ini
     //------------------------------------------------------------------------------------------------------------------
 
-    get_castle_hp = function() {
+    get_castle_hp() {
         return this.formation[0].hp;
     };
 
@@ -248,7 +248,7 @@ class Player {
     // Mereturn array berisi unit-unit yang bisa diberi perintah saat method ini dijalankan
     //------------------------------------------------------------------------------------------------------------------
 
-    get_movable_units = function() {
+    get_movable_units() {
         const movable_units = [];
         const units = this.formation;
 
@@ -282,38 +282,6 @@ class Unit {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    // > Method: Deal Damage
-    //------------------------------------------------------------------------------------------------------------------
-    // Method mengaplikasikan damage ke unit lawan
-    //------------------------------------------------------------------------------------------------------------------
-
-    deal_damage(target) {
-        let dmg = random(this.dmg_min, this.dmg_max);
-        target.hp -= dmg;
-        console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
-
-        this.owner.damage_dealt += dmg;
-
-        this.vexanian_check(target, dmg);    // Jika target adalah Vexanian Illusionist, penyerang mendapat damage
-    };
-
-    //------------------------------------------------------------------------------------------------------------------
-    // > Method: Vexanian Check
-    //------------------------------------------------------------------------------------------------------------------
-    // Mengaplikasikan damage reflection jika unit ini menyerang Vexanian Illusionist
-    //------------------------------------------------------------------------------------------------------------------
-
-    vexanian_check(target, dmg) {
-        if(target.hasOwnProperty('dmg_return_mod')) {
-            dmg = Math.floor(dmg * target.dmg_return_mod);
-            this.hp -= dmg;
-            console.log(
-                `${this.name} menusuk dirinya sendiri dan menerima ${dmg} poin damage!`
-            )
-        }
-    };
-
-    //------------------------------------------------------------------------------------------------------------------
     // > Method: Attack
     //------------------------------------------------------------------------------------------------------------------
     // Setiap unit dapat diperintahkan untuk menyerang unit lawan
@@ -327,7 +295,6 @@ class Unit {
 
         if(!this.has_moved) {
             this.deal_damage(target);           // Kalkulasi damage + aksi penyerangan
-
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit berhasil menurunkan HP terget ke 0
@@ -348,6 +315,38 @@ class Unit {
     };
 
     //------------------------------------------------------------------------------------------------------------------
+    // > Method: Deal Damage
+    //------------------------------------------------------------------------------------------------------------------
+    // Method mengaplikasikan damage ke unit lawan
+    //------------------------------------------------------------------------------------------------------------------
+
+    deal_damage(target) {
+        const dmg = random(this.dmg_min, this.dmg_max);
+
+        target.hp -= dmg;
+        console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
+
+        this.vexanian_check(target, dmg);
+        this.owner.damage_dealt += dmg;
+    };
+
+    //------------------------------------------------------------------------------------------------------------------
+    // > Method: Vexanian Check
+    //------------------------------------------------------------------------------------------------------------------
+    // Mengaplikasikan damage reflection jika unit ini menyerang Vexanian Illusionist
+    //------------------------------------------------------------------------------------------------------------------
+
+    vexanian_check(target, dmg) {
+        if(target.hasOwnProperty('dmg_return_mod')) {
+            dmg = Math.floor(dmg * target.dmg_return_mod);
+            this.hp -= dmg;
+            console.log(
+                `${this.name} menusuk dirinya sendiri dan menerima ${dmg} poin damage!`
+            )
+        }
+    };
+
+    //------------------------------------------------------------------------------------------------------------------
     // > Method: Status
     //------------------------------------------------------------------------------------------------------------------
     // Menampilkan nama unit dan jumlah HP tersisa. Digunakan nantinya saat permainan berlangsung
@@ -358,15 +357,17 @@ class Unit {
         //--------------------------------------------------------------------------------------------------------------
         // Menampilkan nama unit dan HP tersisa
         //--------------------------------------------------------------------------------------------------------------
-        // -> Nightblade Infiltrator (3/3)
+        // -> [3/3 HP] Nightblade Infiltrator
         //--------------------------------------------------------------------------------------------------------------
-        let info = `${this.name} (${this.hp}/${this.max_hp} HP)`;
+
+        let info = `[${this.hp}/${this.max_hp} HP] ${this.name}`;
 
         //--------------------------------------------------------------------------------------------------------------
         // Menampilkan status apakah unit sedang kondisi stealth/tersembunyi
         //--------------------------------------------------------------------------------------------------------------
-        // -> Nightblade Infiltrator (3/3) (Stealth)
+        // -> [3/3 HP] Nightblade Infiltrator (Stealth)
         //--------------------------------------------------------------------------------------------------------------
+
         if(this.hasOwnProperty('is_stealthed')) {
             if(this.is_stealthed)
                 info += ' (Stealth)';
@@ -375,16 +376,18 @@ class Unit {
         //--------------------------------------------------------------------------------------------------------------
         // Menambahkan keterangan (Dead) jika unit sudah mati
         //--------------------------------------------------------------------------------------------------------------
-        // -> Nightblade Infiltrator (0/3) (Dead)
+        // -> [3/3 HP] Nightblade Infiltrator (Dead)
         //--------------------------------------------------------------------------------------------------------------
+
         if(this.hp <= 0)
             info += ' (Dead)';
 
         //--------------------------------------------------------------------------------------------------------------
         // Menambahkan keterangan jika unit sudah bergerak di ronde tersebut
         //--------------------------------------------------------------------------------------------------------------
-        // -> Contoh output: Nightblade Infiltrator (3/3) (Zzz)
+        // -> [3/3 HP] Nightblade Infiltrator (Zzz)
         //--------------------------------------------------------------------------------------------------------------
+
         if(this.has_moved)
             info += ' (Zzz)';
 
@@ -474,11 +477,10 @@ class Saboteur extends Unit {
         this.has_moved = false;
     }
 
-
-
     //------------------------------------------------------------------------------------------------------------------
-    // Unit ini secara otomatis melakukan sabotase kastil lawan saat dibeli oleh pemain
+    // Unit ini secara otomatis melakukan sabotase kastil lawan saat ia dibeli oleh pemain
     //------------------------------------------------------------------------------------------------------------------
+
     sabotage = function() {
         const sabotage_dmg = random(this.sabotage_min, this.sabotage_max);
         this.owner.formation[0].hp -= sabotage_dmg;
@@ -497,7 +499,7 @@ class Builder extends Unit {
     constructor(owner) {
         const
             repair_min = 1,
-            repair_max = 3;
+            repair_max = 4;
 
         super(
             owner,
@@ -564,17 +566,19 @@ class Bomber extends Unit {
         //--------------------------------------------------------------------------------------------------------------
         // Kalkulasi random damage
         //--------------------------------------------------------------------------------------------------------------
+
         const dmg = random(this.dmg_min, this.dmg_max);
+
+        target.hp -= dmg;
         console.log(
-            `${this.name} ${this.owner.p_name} meledakkan dirinya di dekat ${target.name}\n` +
+            `${this.name} ${this.owner.p_name} meledakkan dirinya di dekat ${target.name}` +
             `dan memberikan ${dmg} damage!`
         );
-        target.hp -= dmg;
 
         this.owner.damage_dealt += dmg;
 
         //--------------------------------------------------------------------------------------------------------------
-        // Bunuh unit ini
+        // Bunuh unit ini setelah ia meledakkan dirinya sendiri
         //--------------------------------------------------------------------------------------------------------------
 
         this.hp = 0;
@@ -619,23 +623,26 @@ class Nightblade extends Unit {
 
     deal_damage(target) {
 
-        //----------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
         // Kalkulasi random damage dan aksi penyerangan
-        //----------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
 
-        let dmg1 = random(this.dmg_min, this.dmg_max);
-        let dmg2 = random(this.dmg_min, this.dmg_max);
-        let dmg_total = dmg1 + dmg2;
+        const
+            dmg1 = random(this.dmg_min, this.dmg_max),
+            dmg2 = random(this.dmg_min, this.dmg_max),
+            dmg_total = dmg1 + dmg2;
+
         target.hp -= dmg_total;
-        console.log(`${this.name} menyerang ${target.name} untuk ${dmg1} + ${dmg2} (${dmg1 + dmg2}) poin damage!`);
+        console.log(
+            `${this.name} menyerang ${target.name} untuk ${dmg1} dan ${dmg2} (total: ${dmg_total}) poin damage!`
+        );
 
         this.owner.damage_dealt += dmg_total;
-
         this.vexanian_check(target, dmg_total);
 
-        //----------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
         // Nyatakan bahwa unit tak lagi tersembunyi dan dapat diserang oleh lawan
-        //----------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
 
         if(this.is_stealthed) {
             this.is_stealthed = false;
@@ -688,14 +695,15 @@ class Berserker extends Unit {
     //------------------------------------------------------------------------------------------------------------------
 
     deal_damage(target) {
-        const missing_hp = this.max_hp - this.hp;
-        let dmg = this.dmg_min + random(0, missing_hp);
+
+        const
+            missing_hp = this.max_hp - this.hp,
+            dmg = this.dmg_min + random(0, missing_hp);
 
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} dengan ${dmg} poin damage!`);
 
         this.vexanian_check(target, dmg);
-
         this.owner.damage_dealt += dmg;
     };
 
@@ -777,6 +785,7 @@ class Voxblade extends Unit {
             //----------------------------------------------------------------------------------------------------------
             // Kalkulasi random damage dan aksi penyerangan
             //----------------------------------------------------------------------------------------------------------
+
             const
                 dmg1 = random(this.dmg_min, this.dmg_max),
                 dmg2 = random(this.dmg_min, this.dmg_max),
@@ -784,18 +793,20 @@ class Voxblade extends Unit {
 
             target.hp -= total_dmg;
             console.log(
-                `${this.name} ${this.owner.p_name} menyerang ${target.name} untuk ${dmg1} + ${dmg2} (${total_dmg}) `+
-                `poin damage!`
+                `${this.name} ${this.owner.p_name} menyerang ${target.name} untuk ${dmg1} dan ` +
+                `${dmg2} (total: ${total_dmg}) poin damage!`
             );
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit yang diserang adalah Vexanian Illusionist
             //----------------------------------------------------------------------------------------------------------
+
             this.vexanian_check(target, total_dmg);
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit berhasil menurunkan HP terget ke 0
             //----------------------------------------------------------------------------------------------------------
+
             if(target.hp <= 0 && !target.is_castle) {
 
                 console.log(get_kill_quote(this, target));
@@ -903,25 +914,29 @@ class VampireBattlelord extends Unit {
     //------------------------------------------------------------------------------------------------------------------
     // > Override Method: Deal Damage
     //------------------------------------------------------------------------------------------------------------------
-    // Unit ini melakukan heal pada diri sendiri setiap kali ia menyerang unit lain
+    // Unit ini memiliki method khusus yang harus dipanggil saat ia melakukan penyerangan
     //------------------------------------------------------------------------------------------------------------------
 
     deal_damage(target) {
 
-        //--------------------------------------------------------------------------------------------------------------
-        // Kalkulasi random damage dan aksi penyerangan
-        //--------------------------------------------------------------------------------------------------------------
-
         const dmg = random(this.dmg_min, this.dmg_max);
+
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
 
+        this.apply_lifesteal(dmg);
+
+        this.vexanian_check(target, dmg);
         this.owner.damage_dealt += dmg;
+    }
 
-        //--------------------------------------------------------------------------------------------------------------
-        // Ability: Life steal (Tidak berlaku pada castle!)
-        //--------------------------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------
+    // > Method: Apply Life Steal
+    //------------------------------------------------------------------------------------------------------------------
+    // Unit ini melakukan heal pada diri sendiri setiap kali ia menyerang unit lain
+    //------------------------------------------------------------------------------------------------------------------
 
+    apply_lifesteal(amount) {
         if(!target.is_castle) {
             const heal = Math.floor(dmg * this.lifesteal_mod);
             this.hp += heal;
@@ -929,9 +944,7 @@ class VampireBattlelord extends Unit {
                 `${this.name} menyerap ${heal} HP!`
             )
         }
-
-        this.vexanian_check(target, dmg);
-    };
+    }
 }
 
 
@@ -1014,6 +1027,18 @@ function input_number(prompt) {
 
 
 //======================================================================================================================
+// > Function: Input String
+//----------------------------------------------------------------------------------------------------------------------
+// Mendapatkan input dari pemain
+//======================================================================================================================
+
+function input_string(prompt) {
+    const get_input = require('prompt-sync')();
+    return get_input(prompt);
+}
+
+
+//======================================================================================================================
 // > Function: Get Kill Quote
 //----------------------------------------------------------------------------------------------------------------------
 // Mendapatkan quote-quote badass saat seseorang melakukan kill!
@@ -1043,7 +1068,6 @@ function get_kill_quote(attacker, victim) {
 
         random_index = random(0, QUOTE_LIST.length-1);
 
-
     return QUOTE_LIST[random_index];
 }
 
@@ -1051,7 +1075,7 @@ function get_kill_quote(attacker, victim) {
 //======================================================================================================================
 // > Encapsulation: Game
 //----------------------------------------------------------------------------------------------------------------------
-// Segala attribute dan method seputar game secara keseluruhan ditampung di sini
+// Segala attribute dan method seputar game ditampung di sini
 //======================================================================================================================
 
 const Game = {
@@ -1059,24 +1083,30 @@ const Game = {
     //------------------------------------------------------------------------------------------------------------------
     // Ronde saat ini
     //------------------------------------------------------------------------------------------------------------------
+
     round: 0,
 
     //------------------------------------------------------------------------------------------------------------------
     // Turn saat ini
     //------------------------------------------------------------------------------------------------------------------
+
     turn: 0,
 
     //------------------------------------------------------------------------------------------------------------------
     // List pemain
     //------------------------------------------------------------------------------------------------------------------
+
     players: [],
 
+
     //------------------------------------------------------------------------------------------------------------------
-    // List unit - Agar method-method di bawah dapat mengakses data unit (karena data-data dalam class yang
-    // belum diinisiasi menjadi obyek akan selalu mereturn 'undefined' jika diakses begitu saja). Misalnya,
-    // memanggil NoviceAdventurer.cost akan mereturn nilai 'undefined' dan bukan nilai asli dari attribute
-    // tersebut
+    // *) List unit
     //------------------------------------------------------------------------------------------------------------------
+    // Agar method-method di bawah dapat mengakses data unit (karena data-data dalam class yang belum diinisiasi
+    // menjadi obyek akan selalu mereturn 'undefined' jika diakses begitu saja). Misalnya, memanggil
+    // NoviceAdventurer.cost akan mereturn nilai 'undefined' dan bukan nilai asli dari attribute tersebut
+    //------------------------------------------------------------------------------------------------------------------
+
     units: [
         {} = new NoviceAdventurer(undefined),
         {} = new Saboteur(undefined),
@@ -1088,31 +1118,311 @@ const Game = {
         {} = new Voxblade(undefined),
         {} = new Vexanian(undefined),
         {} = new VampireBattlelord(undefined)
-    ],
+    ].sort((a, b) => (a.cost > b.cost) ? 1 : -1),
+
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Method untuk memulai permainan
+    //------------------------------------------------------------------------------------------------------------------
+
+    start() {
+
+        Game.mode_selection();
+        Game.next_round();
+
+        let end_game = false;
+        do {
+
+            //----------------------------------------------------------------------------------------------------------
+            // Ditampilkan informasi-informasi berikut:
+            // - Ronde keberapa
+            // - Giliran siapa
+            // - Formasi unit masing-masing pemain
+            //----------------------------------------------------------------------------------------------------------
+
+            console.log(`<====== Ronde ${Game.round} ======>`);
+            console.log(`Giliran: ${Game.players[Game.turn].p_name}\n`);
+
+            //----------------------------------------------------------------------------------------------------------
+            // Jika saat ini giliran player, tampilkan apa saja yang dapat ia lakukan
+            //----------------------------------------------------------------------------------------------------------
+
+            const player = Game.players[Game.turn];
+            if(!player.hasOwnProperty('isAI')) {
+
+                Game.show_battlefield();
+
+                console.log(`<=== Action Menu ===>`);
+                console.log(`Credit(s): ${player.credit}\n`);
+                console.log(`1. Beli unit`);
+                console.log(`2. Beri unit perintah`);
+                console.log(`3. Akhiri Giliran`);
+                console.log(`4. Menyerah\n`);
+
+                const action = input_number("> ");
+
+                switch(action) {
+
+                    //--------------------------------------------------------------------------------------------------
+                    // Case 1: Pemain membeli unit baru
+                    //--------------------------------------------------------------------------------------------------
+
+                    case 1:
+
+                        //----------------------------------------------------------------------------------------------
+                        // Pemain ditampilakn daftar unit yang tersedia di game ini
+                        //----------------------------------------------------------------------------------------------
+
+                        console.log(`<=== Buy Menu ===>\n`);
+                        Game.show_unit_profiles();
+
+                        //----------------------------------------------------------------------------------------------
+                        // Pemain diminta memilih satu unit untuk dibeli
+                        //----------------------------------------------------------------------------------------------
+
+                        const select = input_number(`Pilih unit (Credit: ${player.credit}): `) -1;
+
+                        //----------------------------------------------------------------------------------------------
+                        // Jika pemain menginput yang aneh-aneh, tampilkan pesan error
+                        //----------------------------------------------------------------------------------------------
+
+                        if(select < 0 || select >= Game.units.length) {
+                            console.log(`Error: Input tidak dapat diterima!`);
+                            press_enter_to_continue();
+                        }
+
+                        //----------------------------------------------------------------------------------------------
+                        // Jika pemain tidak memiliki cukup credit, tampilkan pemberitahuan
+                        //----------------------------------------------------------------------------------------------
+
+                        else if(player.credit < Game.units[select].cost) {
+                            console.log(`Anda tidak memiliki cukup credit untuk membeli unit ini!`);
+                            press_enter_to_continue();
+                        }
+
+                        //----------------------------------------------------------------------------------------------
+                        // Jika syarat-syarat pembelian unit terpenuhi (credit cukup dan input tidak aneh-aneh),
+                        // lanjutkan proses pembelian unit
+                        //----------------------------------------------------------------------------------------------
+
+                        else {
+                            let new_unit;
+
+                            //------------------------------------------------------------------------------------------
+                            // Jika unit yang dibeli adalah Saboteur, kirim unit tersebut ke barisan lawan
+                            //------------------------------------------------------------------------------------------
+
+                            if(Game.units[select].hasOwnProperty('sabotage'))
+                                new_unit = new Game.units[select].constructor(player.enemy);
+
+
+                            //------------------------------------------------------------------------------------------
+                            // Jika unit lain, kirim unit tersebut ke barisan unit pemain
+                            //------------------------------------------------------------------------------------------
+
+                            else
+                                new_unit = new Game.units[select].constructor(player);
+
+                            //------------------------------------------------------------------------------------------
+                            // Proses pembelian unit...
+                            //------------------------------------------------------------------------------------------
+
+                            player.buy_unit(new_unit);
+
+                            if(new_unit.constructor === Saboteur)   // Jika unit yang dibeli adalah Saboteur
+                                new_unit.sabotage();                // lakukan sabotase kastil lawan
+
+                            if(new_unit.constructor === Builder)    // Jika unit yang dibeli adalah Dwarven Builder
+                                new_unit.repair();                  // perbaiki kastil milik pemain
+
+                            press_enter_to_continue();
+                        }
+
+                        console.log();
+                        break;
+
+
+                    //--------------------------------------------------------------------------------------------------
+                    // Case 2: Pemain memerintahkan unitnya untuk menyerang lawan
+                    //--------------------------------------------------------------------------------------------------
+
+                    case 2:
+
+                        //----------------------------------------------------------------------------------------------
+                        // Untuk dapat memberi perintah, pemain harus memiliki unit yang sudah standby di medan
+                        // tempur dan belum pernah bergerak sama sekali di ronde tersebut
+                        //----------------------------------------------------------------------------------------------
+
+                        if(player.has_movable_unit()) {
+
+                            //------------------------------------------------------------------------------------------
+                            // Pemain ditanya ingin memerintahkan unit yang mana
+                            //------------------------------------------------------------------------------------------
+
+                            const moveable_units = player.get_movable_units();
+
+                            console.log(`<=== Command Menu ===>\n`);
+                            let i=0;
+                            for(let unit of moveable_units) {
+                                console.log(`${i+1}. ${unit.status()}`);
+                                i++;
+                            }
+                            console.log();
+                            const select_unit = input_number("Pilih unit untuk dikomando: ") -1;
+
+                            //------------------------------------------------------------------------------------------
+                            // Jika pemain menginput yang aneh-aneh, proses akan keluar dan pemain akan dikembalikan
+                            // ke menu sebelumnya
+                            //------------------------------------------------------------------------------------------
+
+                            if(select_unit < 0 || select_unit >= moveable_units.length) {
+                                console.log(`Error: Input invalid!`);
+                                press_enter_to_continue();
+                                break;
+                            }
+
+                            //------------------------------------------------------------------------------------------
+                            // Pemain ditanya ingin menyerang apa
+                            //------------------------------------------------------------------------------------------
+
+                            const attackable_targets = player.enemy.get_attackable_units();
+
+                            console.log(`\n<=== Formasi Unit Lawan ===>\n`);
+                            i=0;
+                            for(let target of attackable_targets) {
+                                console.log(`${i+1}. ${target.status()}`);
+                                i++;
+                            }
+                            console.log();
+                            const select_target = input_number("Pilih target untuk diserang: ") -1;
+
+                            //------------------------------------------------------------------------------------------
+                            // Jika pemain menginput yang aneh-aneh, proses akan keluar dan pemain akan dikembalikan
+                            // ke menu sebelumnya
+                            //------------------------------------------------------------------------------------------
+
+                            if(select_target < 0 || select_target >= attackable_targets.length) {
+                                console.log(`Error: Input invalid!`);
+                                press_enter_to_continue();
+                                break;
+                            }
+
+                            //------------------------------------------------------------------------------------------
+                            // Input diterima, perintah diproses...
+                            //------------------------------------------------------------------------------------------
+
+                            const unit = moveable_units[select_unit];
+                            const target = attackable_targets[select_target];
+
+                            unit.attack(target);
+                            press_enter_to_continue();
+                        }
+
+                        //----------------------------------------------------------------------------------------------
+                        // Jika pemain tidak memiliki unit yang dapat ia beri perintah, tampilkan pesan
+                        //----------------------------------------------------------------------------------------------
+
+                        else {
+                            console.log(`Anda tidak memiliki unit yang dapat diberi perintah saat ini!`);
+                            press_enter_to_continue();
+                        }
+                        console.log();
+                        break;
+
+
+                    //--------------------------------------------------------------------------------------------------
+                    // Case 3: Pemain mengakhiri gilirannya
+                    //--------------------------------------------------------------------------------------------------
+
+                    case 3:
+                        console.log(`Mengakhiri giliran...\n`);
+                        Game.end_turn();
+                        break;
+
+
+                    //--------------------------------------------------------------------------------------------------
+                    // Case 4: Pemain menyerah... GG!
+                    //--------------------------------------------------------------------------------------------------
+
+                    case 4:
+                        console.log(`${player.p_name} menyerah!`);
+                        player.formation[0].hp = 0;
+                        press_enter_to_continue();
+                        console.log();
+                        break;
+
+
+                    //--------------------------------------------------------------------------------------------------
+                    // Default: Untuk berjaga-jaga jika pemain menginput yang aneh-aneh
+                    //--------------------------------------------------------------------------------------------------
+
+                    default:
+                        console.log(`Error: Masukan yang benar!`);
+                        press_enter_to_continue();
+                        break;
+                }
+            }
+
+            //----------------------------------------------------------------------------------------------------------
+            // Jika saat ini adalah giliran AI...
+            //----------------------------------------------------------------------------------------------------------
+
+            else {
+                Game.ai.start_turn();
+                console.log();
+            }
+
+
+            //----------------------------------------------------------------------------------------------------------
+            // Jika victory condition tercapai (salah satu kastil hancur), looping akan selesai. Jika tidak, looping
+            // akan terus lanjut hingga ada satu kastil yang hancur
+            //----------------------------------------------------------------------------------------------------------
+
+            end_game = Game.victory_condition()
+
+        }while(end_game);
+        Game.victory_screen();
+    },
 
     //------------------------------------------------------------------------------------------------------------------
     // Mencakup seluruh behavior AI
     //------------------------------------------------------------------------------------------------------------------
+
     ai: {
 
-        //------------------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
+        // Dipanggil setiap kali giliran Ai bergerak tiba
+        //--------------------------------------------------------------------------------------------------------------
+
+        start_turn() {
+            Game.ai.combat_module();
+            Game.ai.production_module();
+            console.log(`${ai.p_name} mengakhiri gilirannya!\n`);
+            press_enter_to_continue();
+            console.log();
+            Game.end_turn();
+        },
+
+        //--------------------------------------------------------------------------------------------------------------
         // NEW: AI kini pintar memilih target mana yang harus dinetralisir terlebih dahulu
-        //------------------------------------------------------------------------------------------------------------------
-        enhanced_target_acquisition(attacker) {
+        //--------------------------------------------------------------------------------------------------------------
+
+        enhanced_target_acquisition(attacking_unit) {
             const attackable_units = ai.enemy.get_attackable_units();
-            const target_priority = [
-                Game.units[4],  // Nightblade
-                Game.units[3],  // Bomber
-                Game.units[7],  // Voxblade
-                Game.units[9]   // VampireBattlelord
+            const target_priorities = [
+                Game.units.filter(obj => { return obj.constructor === Nightblade }),          // Nightblade
+                Game.units.filter(obj => { return obj.constructor === Bomber }),              // Bomber
+                Game.units.filter(obj => { return obj.constructor === Voxblade }),            // Voxblade
+                Game.units.filter(obj => { return obj.constructor === VampireBattlelord })    // VampireBattlelord
             ];
 
             //----------------------------------------------------------------------------------------------------------
             // Memprioritaskan unit-unit di atas untuk diserang terlebih dahulu
             //----------------------------------------------------------------------------------------------------------
+
             for(let target of attackable_units) {
-                for(let i=0; i<target_priority; i++) {
-                    if(target.name === target_priority[i])
+                for(let priority_target of target_priorities) {
+                    if(target.name === priority_target.name)
                         return target;
                 }
             }
@@ -1121,12 +1431,14 @@ const Game = {
             // Jika unit yang menyerang adalah Nightblade, serang kastil. Jika lawan memiliki Colovian, serang
             // Coloviannya!
             //----------------------------------------------------------------------------------------------------------
-            if(attacker.hasOwnProperty('is_stealthed'))
+
+            if(attacking_unit.hasOwnProperty('is_stealthed'))
                 return attackable_units[0];
 
             //----------------------------------------------------------------------------------------------------------
             // Jika unit-unit di atas tidak dimiliki oleh lawan, prioritaskan unit dengan HP terkecil
             //----------------------------------------------------------------------------------------------------------
+
             const all_units_hp = [];
 
             for(let target of attackable_units) {
@@ -1137,31 +1449,12 @@ const Game = {
                 if(target.hp === Array.min(all_units_hp))
                     return target;
             }
-
-            // OLD: return random(0, attackable_units.length -1)
-        },
-
-        //--------------------------------------------------------------------------------------------------------------
-        // NEW: AI kini pintar membeli unit
-        //--------------------------------------------------------------------------------------------------------------
-        enhanced_production() {
-
-            //----------------------------------------------------------------------------------------------------------
-            // Jika kastil lawan low dan lawan memiliki Colovian Knight
-            //----------------------------------------------------------------------------------------------------------
-            if(ai.credit >= Game.units[1].cost && ai.enemy.get_castle_hp() < 5 && ai.enemy.has_colovian())
-                return 2;
-
-                //----------------------------------------------------------------------------------------------------------
-                // Random decision making (default)
-            //----------------------------------------------------------------------------------------------------------
-            else
-                return random(0,10);
         },
 
         //--------------------------------------------------------------------------------------------------------------
         // Berisi behavior serang-menyerang
         //--------------------------------------------------------------------------------------------------------------
+
         combat_module() {
             if(ai.has_movable_unit()) {
                 for(let unit of ai.formation) {
@@ -1177,122 +1470,76 @@ const Game = {
         },
 
         //--------------------------------------------------------------------------------------------------------------
-        // Berisi behavior beli-membeli
+        // NEW: AI kini pintar membeli unit
         //--------------------------------------------------------------------------------------------------------------
-        production_module() {
-            let stop_turn = false;
-            while(!stop_turn) {
 
-                let decision = Game.ai.enhanced_production();
+        enhanced_production_planner() {
 
-                let has_enough_credit;
-                let has_other_unit = ai.formation.length > ai.enemy.formation.length;
+            //----------------------------------------------------------------------------------------------------------
+            // Jika kastil lawan low dan lawan memiliki Colovian Knight
+            //----------------------------------------------------------------------------------------------------------
 
-                switch(decision) {
-                    case 0: // Save credit (tidak beli apa-apa)
-                        if(ai.enemy.formation.length >= ai.formation.length || ai.credit < 3)
-                            stop_turn = true;
-                        break;
+            if(ai.credit >= Game.units[1].cost && ai.enemy.get_castle_hp() < 5 && ai.enemy.has_colovian())
+                return Game.units.findIndex(Game.units.findIndex((obj) => obj.constructor === Saboteur));
 
-                    case 1: // Novice Adv
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+            //----------------------------------------------------------------------------------------------------------
+            // Random decision making (default)
+            //----------------------------------------------------------------------------------------------------------
 
-                        if(has_enough_credit)
-                            ai.buy_unit(new NoviceAdventurer(ai));
-                        break;
+            let decision;
+            do {
+                decision = random(0, Game.units.length);
 
-                    case 2:     // Saboteur
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
+                if(decision === Game.units.length && ai.credit < 3)
+                    break;
 
-                        if(has_enough_credit && has_other_unit) {
-                            ai.buy_unit(new Saboteur(ai.enemy));
-                            ai.enemy.formation[ai.enemy.formation.length - 1].sabotage();
-                        }
-                        break;
-
-                    case 3:     // Builder
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
-
-                        if(has_enough_credit && ai.get_castle_hp() < 30) {
-                            ai.buy_unit(new Builder(ai));
-                            ai.formation[ai.formation.length - 1].repair();
-                        }
-                        break;
-
-                    case 4:     // Bomber
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
-
-                        if(has_enough_credit && has_other_unit)
-                            ai.buy_unit(new Bomber(ai));
-                        break;
-
-                    case 5:     // Nightblade
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
-
-                        if(has_enough_credit)
-                            ai.buy_unit(new Nightblade(ai));
-                        break;
-
-                    case 6:     // Berserker
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
-
-                        if(has_enough_credit)
-                            ai.buy_unit(new Berserker(ai));
-                        break;
-
-                    case 7:     // Colovian Knight
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
-
-                        if(has_enough_credit)
-                            ai.buy_unit(new ColovianKnight(ai));
-                        break;
-
-                    case 8:     // Voxblade
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
-
-                        if(has_enough_credit)
-                            ai.buy_unit(new Voxblade(ai));
-                        break;
-
-                    case 9:     // Vexanian
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
-
-                        if(has_enough_credit)
-                            ai.buy_unit(new Vexanian(ai));
-                        break;
-
-                    case 10:    // Vampire Battlelord
-                        has_enough_credit = ai.credit >= Game.units[decision - 1].cost;
-
-                        if(has_enough_credit)
-                            ai.buy_unit(new VampireBattlelord(ai));
-                        break;
-
-                    default:
+                else if(decision !== Game.units.length) {
+                    if(ai.credit >= Game.units[decision].cost)
                         break;
                 }
-            }
+            }while(true);
+            return decision;
         },
 
         //--------------------------------------------------------------------------------------------------------------
-        // Dipanggil setiap kali giliran Ai bergerak tiba
+        // Berisi behavior beli-membeli
         //--------------------------------------------------------------------------------------------------------------
-        start_turn() {
-            Game.ai.combat_module();
-            Game.ai.production_module();
-            console.log(`${ai.p_name} mengakhiri gilirannya!\n`);
-            press_enter_to_continue();
-            console.log();
-            Game.end_turn();
+
+        production_module() {
+            while(true) {
+
+                let decision = Game.ai.enhanced_production_planner();
+
+                if(decision === Game.units.length)
+                    break;
+
+                let new_unit;
+
+                if(Game.units[decision].constructor === Saboteur) {
+                    new_unit = new Game.units[decision].constructor(ai.enemy);
+                }
+
+                else {
+                    new_unit = new Game.units[decision].constructor(ai);
+                }
+                ai.buy_unit(new_unit);
+
+                if(new_unit.constructor === Saboteur)
+                    new_unit.sabotage();
+
+                if(new_unit.constructor === Builder)
+                    new_unit.repair();
+            }
         }
     },
 
-    //------------------------------------------------------------------------------------------------------------------
-    // Method untuk mengacak siapa yang bergerak duluan
-    //------------------------------------------------------------------------------------------------------------------
-    coin_flip() {
-        const c = random(1,2);
 
+    //------------------------------------------------------------------------------------------------------------------
+    // Method untuk mengacak siapa yang bergerak duluan (Singleplayer)
+    //------------------------------------------------------------------------------------------------------------------
+
+    coin_flip_sp() {
+        const c = random(1,2);
 
         switch(c) {
             case 1:     // Player duluan
@@ -1309,29 +1556,92 @@ const Game = {
         p1.set_enemy(ai);
         ai.set_enemy(p1);
 
+        ai.isAI = true;
+
         console.log(`${Game.players[0].p_name} bergerak duluan!`);
         press_enter_to_continue();
-        console.log(`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n`)
+        console.log(`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n`);
+    },
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Method untuk mengacak siapa yang bergerak duluan (Multiplayer)
+    //------------------------------------------------------------------------------------------------------------------
+
+    coin_flip_mp(p1_name, p2_name) {
+        const c = random(1,2);
+
+        switch(c) {
+            case 1:     // Player 1 duluan
+                Game.players.push(new Player(p1_name));
+                Game.players.push(new Player(p2_name));
+                break;
+
+            case 2:     // Player 2 duluan
+                Game.players.push(new Player(p2_name));
+                Game.players.push(new Player(p1_name));
+                break;
+        }
+
+        Game.players[0].set_enemy(Game.players[1]);
+        Game.players[1].set_enemy(Game.players[0]);
+
+        console.log(`${Game.players[0].p_name} bergerak duluan!`);
+        press_enter_to_continue();
+        console.log(`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n`);
+    },
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Memilih apakah ingin memainkan mode Singleplayer atau Multiplayer
+    //------------------------------------------------------------------------------------------------------------------
+
+    mode_selection() {
+        let loop = true;
+        do {
+            console.log(`<==== Game Mode ====>\n`);
+            console.log(`1. Singleplayer vs AI`);
+            console.log(`2. Multiplayer PvP\n`);
+
+            const choice = input_number("> ");
+
+            switch(choice) {
+                case 1:     // Singleplayer vs AI
+                    Game.is_multiplayer = false;
+                    Game.coin_flip_sp();
+                    loop = false;
+                    break;
+
+                case 2:     // Multiplayer PvP
+                    Game.is_multiplayer = true;
+
+                    const
+                        p1_name = input_string("Masukan nama pemain 1: "),
+                        p2_name = input_string("Masukan nama pemain 2: ");
+
+                    console.log();
+                    Game.coin_flip_mp(p1_name, p2_name);
+                    loop = false;
+                    break;
+
+                default:
+                    console.log(`Error: Mohon masukan yang benar!\n`);
+                    break;
+            }
+        }while(loop);
     },
 
     //------------------------------------------------------------------------------------------------------------------
     // Method untuk memajukan ronde permainan
     //------------------------------------------------------------------------------------------------------------------
+
     next_round() {
 
-        //--------------------------------------------------------------------------------------------------------------
-        // Masuk ke ronde berikutnya
-        //--------------------------------------------------------------------------------------------------------------
         Game.round++;
-
-        //--------------------------------------------------------------------------------------------------------------
-        // Untuk setiap pemain yang memainkan permainan...
-        //--------------------------------------------------------------------------------------------------------------
         for(let player of Game.players) {
 
             //----------------------------------------------------------------------------------------------------------
             // Menambahkan credit ke masing-masing player di tiap pergantian ronde
             //----------------------------------------------------------------------------------------------------------
+
             let credit_earning = (Game.round < MAX_CREDIT_GAIN)
                 ? Game.round
                 : MAX_CREDIT_GAIN;
@@ -1345,6 +1655,7 @@ const Game = {
             //----------------------------------------------------------------------------------------------------------
             // Mereset has_moved semua unit non-kastil agar bisa bergerak kembali
             //----------------------------------------------------------------------------------------------------------
+
             for(let unit of player.formation) {
                 if(!unit.is_castle) {
                     unit.has_moved = false;
@@ -1354,19 +1665,48 @@ const Game = {
     },
 
     //------------------------------------------------------------------------------------------------------------------
+    // Method untuk menampilkan seluruh unit (termasuk kastil) milik semua pemain
+    //------------------------------------------------------------------------------------------------------------------
+
+    show_battlefield() {
+
+        //--------------------------------------------------------------------------------------------------------------
+        // Pada mode multiplayer, formasi pemain yang bergerak duluan akan ditampilkan di atas
+        //--------------------------------------------------------------------------------------------------------------
+
+        if(Game.is_multiplayer) {
+            for(let player of Game.players)
+                player.show_unit_formation();
+        }
+
+            //--------------------------------------------------------------------------------------------------------------
+            // Pada mode singleplayer, formasi pemain manusia selalu ditampilkan di atas walau ia tidak bergerak duluan
+        //--------------------------------------------------------------------------------------------------------------
+
+        else {
+            p1.show_unit_formation();
+            p1.enemy.show_unit_formation();
+        }
+        console.log();
+    },
+
+    //------------------------------------------------------------------------------------------------------------------
     // Mengakhiri giliran
     //------------------------------------------------------------------------------------------------------------------
+
     end_turn() {
 
         //--------------------------------------------------------------------------------------------------------------
         // Jika kedua pemain sudah sama-sama bergerak, masuk ke ronde berikutnya!
         //--------------------------------------------------------------------------------------------------------------
+
         if(Game.turn === 1)
             Game.next_round();
 
         //--------------------------------------------------------------------------------------------------------------
         // Jika saat ini 0, set ke 1. Jika saat ini 1, set ke 0
         //--------------------------------------------------------------------------------------------------------------
+
         Game.turn = (Game.turn === 0)
             ? 1
             : 0;
@@ -1374,211 +1714,40 @@ const Game = {
         //--------------------------------------------------------------------------------------------------------------
         // Singkirkan unit mati dari formasi pertempuran
         //--------------------------------------------------------------------------------------------------------------
-        const player = Game.players[Game.turn] === ai ? p1 : ai;
+
+        const player = Game.players[Game.turn];
         for(let unit of player.formation) {
-            if (unit.hp <= 0)
+            if(unit.hp <= 0 && !unit.is_castle)
                 player.formation.remove(unit);
+        }
+
+        //--------------------------------------------------------------------------------------------------------------
+        // Pada mode multiplayer, pemain yang akan bergerak setelah ini disebut namanya
+        //--------------------------------------------------------------------------------------------------------------
+
+        if(Game.is_multiplayer) {
+            console.log(`Pemain berikutnya, ${Game.players[Game.turn].p_name}, bersiaplah!`);
+            press_enter_to_continue();
+            console.log();
         }
 
     },
 
     //------------------------------------------------------------------------------------------------------------------
-    // Method untuk memulai permainan
+    // Method untuk menampilkan seluruh profile unit yang ada di game
     //------------------------------------------------------------------------------------------------------------------
-    start() {
-        Game.coin_flip();
-        Game.next_round();
 
-        let end_game = false;
-        do {
-
-            //------------------------------------------------------------------------------------------------------
-            // Ditampilkan informasi-informasi berikut:
-            // - Ronde keberapa
-            // - Giliran siapa
-            // - Formasi unit masing-masing pemain
-            //------------------------------------------------------------------------------------------------------
-            console.log(`<====== Ronde ${Game.round} ======>`);
-            console.log(`Giliran: ${Game.players[Game.turn].p_name}\n`);
-
-            //----------------------------------------------------------------------------------------------------------
-            // Jika saat ini giliran player
-            //----------------------------------------------------------------------------------------------------------
-
-            const is_player_turn = (Game.players[Game.turn] === p1);
-            if(is_player_turn) {
-
-                p1.show_unit_formation();
-                ai.show_unit_formation();
-
-                console.log();
-                console.log(`<=== Action Menu ===>`);
-                console.log(`Credit(s): ${p1.credit}\n`);
-                console.log(`1. Beli unit`);
-                console.log(`2. Beri unit perintah`);
-                console.log(`3. Akhiri Giliran\n`);
-
-                const action = input_number("> ");
-                console.log();
-
-                switch(action) {
-                    case 1:     // Beli Unit
-                        console.log(`<=== Buy Menu ===>\n`);
-
-                        let n = 1;
-                        for(let unit of Game.units) {
-                            console.log(`${n}. ${unit.get_profile()}`);
-                            n++;
-                        }
-
-                        const select = input_number(`Pilih unit (Credit: ${p1.credit}): `) -1;
-
-                        if(select < 0 || select >= Game.units.length) {
-                            console.log(`Error: Input tidak dapat diterima!`);
-                            press_enter_to_continue();
-                        }
-
-                        else if(p1.credit < Game.units[select].cost) {
-                            console.log(`Anda tidak memiliki cukup credit untuk membeli unit ini!`);
-                            press_enter_to_continue();
-                        }
-
-                        else {
-                            switch(select) {
-                                case 0: // Novice Adv
-                                    p1.buy_unit(new NoviceAdventurer(p1));
-                                    break;
-
-                                case 1:     // Saboteur
-                                    p1.buy_unit(new Saboteur(ai));
-                                    p1.enemy.formation[p1.enemy.formation.length -1].sabotage();
-                                    break;
-
-                                case 2:     // Builder
-                                    p1.buy_unit(new Builder(p1));
-                                    p1.formation[p1.formation.length -1].repair();
-                                    break;
-
-                                case 3:     // Bomber
-                                    p1.buy_unit(new Bomber(p1));
-                                    break;
-
-                                case 4:     // Nightblade
-                                    p1.buy_unit(new Nightblade(p1));
-                                    break;
-
-                                case 5:     // Berserker
-                                    p1.buy_unit(new Berserker(p1));
-                                    break;
-
-                                case 6:     // Colovian Knight
-                                    p1.buy_unit(new ColovianKnight(p1));
-                                    break;
-
-                                case 7:     // Voxblade
-                                    p1.buy_unit(new Voxblade(p1));
-                                    break;
-
-                                case 8:     // Vexanian
-                                    p1.buy_unit(new Vexanian(p1));
-                                    break;
-
-                                case 9:    // Vampire Battlelord
-                                    p1.buy_unit(new VampireBattlelord(p1));
-                                    break;
-
-                                default:
-                                    break;
-                            }
-                            press_enter_to_continue();
-                        }
-
-                        console.log(``);
-                        break;
-
-                    case 2:     // Serang
-                        if(p1.has_movable_unit()) {
-                            const moveable_units = p1.get_movable_units();
-
-                            console.log(`<=== Command Menu ===>\n`);
-                            let i=0;
-                            for(let unit of moveable_units) {
-                                console.log(`${i+1}. ${unit.status()}`);
-                                i++;
-                            }
-                            console.log();
-                            const select_unit = input_number("Pilih unit untuk dikomando: ") -1;
-
-                            if(select_unit < 0 || select_unit >= moveable_units.length) {
-                                console.log(`Error: Input invalid!`);
-                                press_enter_to_continue();
-                                break;
-                            }
-
-                            //------------------------------------------------------------------------------------------
-
-                            const attackable_targets = ai.get_attackable_units();
-
-                            console.log(`\n<=== Formasi Unit Lawan ===>\n`);
-                            i=0;
-                            for(let target of attackable_targets) {
-                                console.log(`${i+1}. ${target.status()}`);
-                                i++;
-                            }
-                            console.log();
-                            const select_target = input_number("Pilih target untuk diserang: ") -1;
-
-                            if(select_target < 0 || select_target >= attackable_targets.length) {
-                                console.log(`Error: Input invalid!`);
-                                press_enter_to_continue();
-                                break;
-                            }
-
-                            const unit = moveable_units[select_unit];
-                            const target = attackable_targets[select_target];
-
-                            unit.attack(target);
-                            press_enter_to_continue();
-                        }
-
-                        else {
-                            console.log(`Anda tidak memiliki unit yang dapat diberi perintah saat ini!`);
-                            press_enter_to_continue();
-                        }
-                        console.log();
-                        break;
-
-                    case 3:     // End turn
-                        console.log(`Mengakhiri giliran...\n\n\n`);
-                        Game.end_turn();
-                        break;
-
-                    default:
-                        console.log(`Error: Masukan yang benar!`);
-                        press_enter_to_continue();
-                        break;
-                }
-
-            }
-
-            //----------------------------------------------------------------------------------------------------------
-            // Jika saat ini adalah giliran AI
-            //----------------------------------------------------------------------------------------------------------
-
-            else {
-                Game.ai.start_turn();
-                console.log();
-            }
-
-            end_game = Game.victory_condition()
-
-        }while(end_game);
-        Game.victory_screen();
+    show_unit_profiles() {
+        const last_index = Game.units.length -1;
+        for(let i=last_index; i>=0; i--)
+            console.log(`${i+1}. ${Game.units[i].get_profile()}`);
+        console.log();
     },
 
     //------------------------------------------------------------------------------------------------------------------
     // Mengecek apakah ada kastil milik salah satu pemain yang sudah hancur
     //------------------------------------------------------------------------------------------------------------------
+
     victory_condition() {
         for(let player of Game.players) {
             if(player.get_castle_hp() <= 0)
@@ -1587,7 +1756,16 @@ const Game = {
         return true;
     },
 
+    //------------------------------------------------------------------------------------------------------------------
+    // Tampilan akhir yang akan ditampilkan saat permainan sudah selesai
+    //------------------------------------------------------------------------------------------------------------------
+
     victory_screen() {
+
+        //--------------------------------------------------------------------------------------------------------------
+        // Beritahu siapa yang menang dan siapa yang kalah
+        //--------------------------------------------------------------------------------------------------------------
+
         for(let player of Game.players) {
             if(player.get_castle_hp() <= 0) {
                 console.log(`Kastil ${player.p_name} hancur!`);
@@ -1596,6 +1774,10 @@ const Game = {
                 break;
             }
         }
+
+        //--------------------------------------------------------------------------------------------------------------
+        // Output rekap pertempuran
+        //--------------------------------------------------------------------------------------------------------------
 
         console.log(`\n<==== Rekap Pertempuran ====>`);
         console.log(`Total ronde: ${Game.round} ronde\n`);
@@ -1611,11 +1793,21 @@ const Game = {
         press_enter_to_continue();
         console.log();
 
+        //--------------------------------------------------------------------------------------------------------------
+        // Permainan berakhir! Terima kasih telah memainkan permainan kami!
+        //--------------------------------------------------------------------------------------------------------------
+
         console.log(`Game Over!`);
         press_enter_to_continue();
 
+        //--------------------------------------------------------------------------------------------------------------
+        // Game data/stat reset
+        //--------------------------------------------------------------------------------------------------------------
+
         Game.players.pop();
         Game.players.pop();
+        Game.round = 0;
+
         console.log(`\n`);
     }
 };
