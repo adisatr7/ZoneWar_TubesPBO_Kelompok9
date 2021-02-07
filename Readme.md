@@ -30,21 +30,15 @@ Selamat datang di page GitHub kami! Kami adalah kelompok 9, yang beranggotakan:
 * Satria Adi Nugraha (19104027)  
 * Rifqi Alfinnur Charisma (19104031)  
 
-Page ini adalah hasil kerjasama kelompok kami. Setelah hasil diskusi bersama kami memutuskan untuk membuat game berjudul Zone War: Text Strategy Game. Sesuai dengan judul game ini adalah game strategi yang berbasis text.
+Page ini adalah hasil kerjasama kelompok kami. Setelah hasil diskusi bersama kami memutuskan untuk membuat game berjudul Zone War: Text Strategy Game. Sesuai dengan judul game ini adalah game strategi yang berbasis text. Adapun video penjelasan tentang bagaimana cara kerja game ini dapat dilihat [disini](https://youtu.be/jXoSgrdUbFs). Jika ada gambar yang kurang jelas di video tersebut, anda dapat melihat versi HDnya [disini](https://github.com/raddox7/ZoneWar_TubesPBO_Kelompok9/tree/master/Documentation)
 
 ## Developer's Logs
 
-#### Changelog (v0.4):
+#### Changelog (v1):
 
-- Daftar unit yang ditampilkan saat pemain membeli unit kini ditampilkan secara urut berdasarkan harga creditnya.
-- Menghadirkan mode baru: Multiplayer Player vs Player.
-- HP unit kini ditampilkan di sebelah kiri (`Bomber (5/5 HP)` menjadi `[5/5 HP] Bomber`).
-- Dwarven Builder buff: Repair max dinaikan dari 3 ke 4.
-- Bug dan typo fixes.
+- Finalisasi game serta memastikan game benar-benar sudah dalam keadaan 'final'
 
 #### Known Bugs:
-
-- [x] Dwarven Builder tidak memperbaiki kastil saat dipanggil.
 
 Menemukan bug? Harap laporkan kepada kami segera!
 
@@ -52,12 +46,12 @@ Menemukan bug? Harap laporkan kepada kami segera!
 - [x] ~~Buat Class Diagram~~
 - [x] ~~Buat program dalam bahasa Javascript!~~
 - [x] ~~Upload ke Github!~~
+- [x] ~~Temukan bug sebanyak mungkin!~~
+- [x] ~~Perbaiki bug-bug yang sudah ditemukan!~~
+- [x] ~~Siapkan materi presentasi!~~
+- [x] ~~Buat video presentasi!~~
+- [x] ~~Upload video ke YouTube!~~
 - [ ] Pastikan tidak ada unit yang overpowered!
-- [ ] Temukan bug sebanyak mungkin!
-- [ ] Perbaiki bug-bug yang sudah ditemukan!
-- [ ] Siapkan materi presentasi!
-- [ ] Buat video presentasi!
-- [ ] Upload video ke YouTube!
 
 ## Cara Bermain
 ```
@@ -75,12 +69,12 @@ Menemukan bug? Harap laporkan kepada kami segera!
 sudah menggunakan gilirannya, permainan akan lanjut ke ronde berikutnya.
 3. Di awal permainan dilakukan yang namanya coin-flip untuk 
 menentukan siapa yang bergerak duluan di setiap rondenya.
-5. Setiap pemain masing-masing memiliki satu buah kastil yang wajib 
+4. Setiap pemain masing-masing memiliki satu buah kastil yang wajib 
 mereka jaga. Kastil ini memiliki 30 HP dan tidak dapat menyerang.
-6. Di setiap ronde, masing-masing pemain memiliki credit dengan 
+5. Di setiap ronde, masing-masing pemain memiliki credit dengan 
 nilai maksimum 10 credits. Setiap ronde, masing-masing pemain 
 mendapatkan credit sejumlah nomor ronde tersebut.
-7. Pada gilirannya, masing-masing pemain dapat:
+6. Pada gilirannya, masing-masing pemain dapat:
    - Menggunakan credit untuk membeli pasukan (lihat daftar pasukan 
    di bawah). Jika anda membeli pasukan, pasukan yang baru anda beli 
    baru bisa diberi perintah di ronde berikutnya.
@@ -98,7 +92,7 @@ mendapatkan credit sejumlah nomor ronde tersebut.
    - Credit anda yang belum dipakai bisa anda pakai di ronde 
    selanjutnya.
 
-8. Permainan berakhir jika kastil milik salah satu pemain hancur. 
+7. Permainan berakhir jika kastil milik salah satu pemain hancur. 
    Pemain yang kastilnya hancur dinyatakan kalah dan pemain yang
    kastilnya masih berdiri dinyatakan sebagai pemenang.
 
@@ -229,7 +223,7 @@ saat ia menyerang unit lain. Jika hasil pembagian ternyata desimal,
 bulatkan ke bawah. Life steal tidak berlaku jika target adalah kastil
 ```
 
-## Petunjuk Instalasi
+## Tertarik Ingin Memainkannya?
 ```
      _   _   _   _   _                             _   _   _   _   _
     | |_| |_| |_| |_| |                           | |_| |_| |_| |_| |
@@ -249,4 +243,11 @@ bulatkan ke bawah. Life steal tidak berlaku jika target adalah kastil
       lc__________|  [  [  |                 |==]==]==|___________|
       ~"^"~"^"~^"~|________|                 |________|~"^"~"^"~^"~
 ```
-Cukup run saja di compiler atau IDE apapun yang mendukung bahasa Javascript!
+Cukup run saja di compiler atau IDE apapun yang mendukung bahasa Javascript! Selain itu anda juga bisa pergi ke salah satu link berikut (Powered by Repl.it):
+
+- Room 1: [Aestherian Forest](https://repl.it/@raddox7/ZoneWar-v1-Room-1)
+- Room 2: [No Man's Land](https://repl.it/@raddox7/ZoneWar-v1-Room-2)
+- Room 3: [Elven Ruins of Alvor](https://repl.it/@raddox7/ZoneWar-v1-Room-3)
+- Room 4: [Frozen Northland](https://repl.it/@raddox7/ZoneWar-v1-Room-4)
+
+Anda juga bisa mengajak teman Anda untuk pergi ke link room yang sama dan memainkan game ini secara **Multiplayer**! Oleh karena itu, jika ada orang lain yang sedang bermain **Singleplayer vs AI** ataupun orang lain yang sedang bermain dengan temannya, mohon dengan sangat untuk jangan diganggu.

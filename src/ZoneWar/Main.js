@@ -56,12 +56,12 @@ const STRINGS = [
             "sudah menggunakan gilirannya, permainan akan lanjut ke ronde berikutnya.\n" +
             "3. Di awal permainan dilakukan yang namanya coin-flip untuk \n" +
             "menentukan siapa yang bergerak duluan di setiap rondenya.\n" +
-            "5. Setiap pemain masing-masing memiliki satu buah kastil yang wajib \n" +
+            "4. Setiap pemain masing-masing memiliki satu buah kastil yang wajib \n" +
             "mereka jaga. Kastil ini memiliki 30 HP dan tidak dapat menyerang.\n" +
-            "6. Di setiap ronde, masing-masing pemain memiliki credit dengan \n" +
+            "5. Di setiap ronde, masing-masing pemain memiliki credit dengan \n" +
             "nilai maksimum 10 credits. Setiap ronde, masing-masing pemain \n" +
             "mendapatkan credit sejumlah nomor ronde tersebut.\n" +
-            "7. Pada gilirannya, masing-masing pemain dapat:\n" +
+            "6. Pada gilirannya, masing-masing pemain dapat:\n" +
             "   - Menggunakan credit untuk membeli pasukan. Jika anda membeli \n" +
             "   pasukan, pasukan yang baru anda beli baru bisa diberi perintah \n" +
             "   di ronde berikutnya.\n" +
@@ -77,7 +77,7 @@ const STRINGS = [
             "   pasukan yang belum diberi perintah apapun di ronde tersebut.\n" +
             "   - Credit anda yang belum dipakai bisa anda pakai di ronde \n" +
             "   selanjutnya.\n\n" +
-            "8. Permainan berakhir jika kastil milik salah satu pemain hancur. \n" +
+            "7. Permainan berakhir jika kastil milik salah satu pemain hancur. \n" +
             "   Pemain yang kastilnya hancur dinyatakan kalah dan pemain yang\n" +
             "   kastilnya masih berdiri dinyatakan sebagai pemenang.\n"
 ];
@@ -344,7 +344,7 @@ class Unit {
                 `${this.name} menusuk dirinya sendiri dan menerima ${dmg} poin damage!`
             )
         }
-    };
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Method: Status
@@ -392,7 +392,7 @@ class Unit {
             info += ' (Zzz)';
 
         return info;
-    };
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Method: Get Profile
@@ -406,7 +406,7 @@ class Unit {
                `\t- Max HP : ${this.max_hp}\n` +
                `\t- Cost   : ${this.cost} credit(s)\n` +
                `\t\"${this.desc}\"\n`;
-    };
+    }
 }
 
 
@@ -486,7 +486,6 @@ class Saboteur extends Unit {
         this.owner.formation[0].hp -= sabotage_dmg;
         console.log(`Kastil ${this.owner.p_name} mengalami kerusakan sebesar ${sabotage_dmg} damage!`);
     }
-
 }
 
 
@@ -571,7 +570,7 @@ class Bomber extends Unit {
 
         target.hp -= dmg;
         console.log(
-            `${this.name} ${this.owner.p_name} meledakkan dirinya di dekat ${target.name}` +
+            `${this.name} ${this.owner.p_name} meledakkan dirinya di dekat ${target.name} ` +
             `dan memberikan ${dmg} damage!`
         );
 
@@ -582,7 +581,7 @@ class Bomber extends Unit {
         //--------------------------------------------------------------------------------------------------------------
 
         this.hp = 0;
-    };
+    }
 }
 
 
@@ -649,7 +648,7 @@ class Nightblade extends Unit {
             console.log(`${this.name} ${this.owner.p_name} tidak lagi tersembunyi!`);
         }
 
-    };
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Override Method: Get Profile
@@ -663,7 +662,7 @@ class Nightblade extends Unit {
                `\t- Max HP : ${this.max_hp}\n` +
                `\t- Cost   : ${this.cost} credit(s)\n` +
                `\t\"${this.desc}\"\n`;
-    };
+    }
 }
 
 
@@ -719,7 +718,7 @@ class Berserker extends Unit {
                `\t- Max HP : ${this.max_hp}\n` +
                `\t- Cost   : ${this.cost} credit(s)\n` +
                `\t\"${this.desc}\"\n`;
-    };
+    }
 }
 
 
@@ -827,7 +826,7 @@ class Voxblade extends Unit {
             console.log(`Error: Unit sudah bergerak di ronde ini! Tunggu hingga ronde berikutnya!!`);
 
         }
-    };
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // > Override Method: Get Profile
@@ -841,7 +840,7 @@ class Voxblade extends Unit {
                `\t- Max HP : ${this.max_hp}\n` +
                `\t- Cost   : ${this.cost} credit(s)\n` +
                `\t\"${this.desc}\"\n`;
-    };
+    }
 }
 
 
@@ -890,10 +889,10 @@ class VampireBattlelord extends Unit {
 
         super(
             owner,
-            "Vampire Battlelord",           // Nama unit
-            2, 8,                           // Damage minimal, maksimal
-            8,                              // Max HP
-            8,                              // Harga
+            "Vampire Battlelord",
+            2, 8,
+            8,
+            8,
 
             `Seorang penyihir yang mengorbankan jiwanya untuk ditawarkan ke\n` +
             `\tiblis demi mendapatkan kekuatan kegelapan. Unit ini mampu\n` +
@@ -924,7 +923,9 @@ class VampireBattlelord extends Unit {
         target.hp -= dmg;
         console.log(`${this.name} menyerang ${target.name} untuk ${dmg} poin damage!`);
 
-        this.apply_lifesteal(dmg);
+        if(!target.is_castle) {
+            this.apply_lifesteal(dmg);
+        }
 
         this.vexanian_check(target, dmg);
         this.owner.damage_dealt += dmg;
@@ -936,14 +937,12 @@ class VampireBattlelord extends Unit {
     // Unit ini melakukan heal pada diri sendiri setiap kali ia menyerang unit lain
     //------------------------------------------------------------------------------------------------------------------
 
-    apply_lifesteal(amount) {
-        if(!target.is_castle) {
-            const heal = Math.floor(dmg * this.lifesteal_mod);
-            this.hp += heal;
-            console.log(
-                `${this.name} menyerap ${heal} HP!`
-            )
-        }
+    apply_lifesteal(damage_dealt) {
+        const heal = Math.floor(damage_dealt * this.lifesteal_mod);
+        this.hp += heal;
+        console.log(
+            `${this.name} menyerap ${heal} HP!`
+        )
     }
 }
 
@@ -971,14 +970,14 @@ Array.prototype.remove = function() {
 
 
 //======================================================================================================================
-// > Prototype Function: Minimum Array Element
+// > Function: Find Minimum (Array) Element
 //----------------------------------------------------------------------------------------------------------------------
 // Mencari nilai terkecil dalam sebuah array
 //======================================================================================================================
 
-Array.min = function( array ){
-    return Math.min.apply( Math, array );
-};
+function find_min_element(array){
+    return Math.min.apply(Math, array);
+}
 
 
 //======================================================================================================================
@@ -1446,7 +1445,7 @@ const Game = {
             }
 
             for(let target of attackable_units) {
-                if(target.hp === Array.min(all_units_hp))
+                if(target.hp === find_min_element(all_units_hp))
                     return target;
             }
         },
